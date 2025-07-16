@@ -1,0 +1,43 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.14.36301.6
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ArxTinUI_V26", "ArxTinUI\ArxTinUI_V26.vcxproj", "{2CEA5FD6-6083-4136-A248-741649E47033}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ArxTinUI_Z26", "ArxTinUI\ArxTinUI_Z26.vcxproj", "{2CEA5FD6-6083-4136-A248-741649E47053}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ArxTinUI_25", "ArxTinUI\ArxTinUI_25.vcxproj", "{2CEA5FD6-6083-4136-A248-741649E47032}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ArxTinUI_G26", "ArxTinUI\ArxTinUI_G26.vcxproj", "{08A72DAD-A84A-4377-9DC6-E2767C5E0734}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x64 = Debug|x64
+		Release|x64 = Release|x64
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{2CEA5FD6-6083-4136-A248-741649E47033}.Debug|x64.ActiveCfg = Debug|x64
+		{2CEA5FD6-6083-4136-A248-741649E47033}.Debug|x64.Build.0 = Debug|x64
+		{2CEA5FD6-6083-4136-A248-741649E47033}.Release|x64.ActiveCfg = Release|x64
+		{2CEA5FD6-6083-4136-A248-741649E47033}.Release|x64.Build.0 = Release|x64
+		{2CEA5FD6-6083-4136-A248-741649E47053}.Debug|x64.ActiveCfg = Debug|x64
+		{2CEA5FD6-6083-4136-A248-741649E47053}.Debug|x64.Build.0 = Debug|x64
+		{2CEA5FD6-6083-4136-A248-741649E47053}.Release|x64.ActiveCfg = Release|x64
+		{2CEA5FD6-6083-4136-A248-741649E47053}.Release|x64.Build.0 = Release|x64
+		{2CEA5FD6-6083-4136-A248-741649E47032}.Debug|x64.ActiveCfg = Debug|x64
+		{2CEA5FD6-6083-4136-A248-741649E47032}.Debug|x64.Build.0 = Debug|x64
+		{2CEA5FD6-6083-4136-A248-741649E47032}.Release|x64.ActiveCfg = Release|x64
+		{2CEA5FD6-6083-4136-A248-741649E47032}.Release|x64.Build.0 = Release|x64
+		{08A72DAD-A84A-4377-9DC6-E2767C5E0734}.Debug|x64.ActiveCfg = Debug|x64
+		{08A72DAD-A84A-4377-9DC6-E2767C5E0734}.Debug|x64.Build.0 = Debug|x64
+		{08A72DAD-A84A-4377-9DC6-E2767C5E0734}.Release|x64.ActiveCfg = Release|x64
+		{08A72DAD-A84A-4377-9DC6-E2767C5E0734}.Release|x64.Build.0 = Release|x64
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {3192C381-D643-415E-A3DA-7DB2DD330450}
+	EndGlobalSection
+EndGlobal
