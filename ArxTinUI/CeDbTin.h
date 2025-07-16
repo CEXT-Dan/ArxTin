@@ -55,32 +55,32 @@ public:
 
 protected:
     static Adesk::UInt32 kCurrentVersionNumber;
+public:
+    enum DrawFlags : int32_t
+    {
+        kDrawPoints = 1 << 0,
+        kDrawTin = 1 << 1,
+        kDrawContours = 1 << 2,
 
+    };
 public:
     CextDbTin();
     CextDbTin(const CePoints& points);
     virtual ~CextDbTin() override = default;
 
-    //----- AcDbObject protocols
-    //- Dwg Filing protocol
     virtual Acad::ErrorStatus dwgOutFields(AcDbDwgFiler* pFiler) const override;
     virtual Acad::ErrorStatus dwgInFields(AcDbDwgFiler* pFiler) override;
+    virtual Acad::ErrorStatus dxfOutFields(AcDbDxfFiler* pFiler) const override;
+    virtual Acad::ErrorStatus dxfInFields(AcDbDxfFiler* pFiler) override;
 
-    //- Dxf Filing protocol
-    virtual Acad::ErrorStatus dxfOutFields(AcDbDxfFiler* pFiler) const;
-    virtual Acad::ErrorStatus dxfInFields(AcDbDxfFiler* pFiler);
+    virtual Acad::ErrorStatus subOpen(AcDb::OpenMode mode) override;
+    virtual Acad::ErrorStatus subErase(Adesk::Boolean erasing) override;
+    virtual Acad::ErrorStatus subCancel() override;
+    virtual Acad::ErrorStatus subClose() override;
 
-    //- SubXXX() methods (self notification)
-    virtual Acad::ErrorStatus subOpen(AcDb::OpenMode mode);
-    virtual Acad::ErrorStatus subErase(Adesk::Boolean erasing);
-    virtual Acad::ErrorStatus subCancel();
-    virtual Acad::ErrorStatus subClose();
-
-    //----- AcDbEntity protocols
-    //- Graphics protocol
 protected:
-    virtual Adesk::Boolean subWorldDraw(AcGiWorldDraw* mode);
-    virtual Adesk::UInt32 subSetAttributes(AcGiDrawableTraits* traits);
+    virtual Adesk::Boolean subWorldDraw(AcGiWorldDraw* mode) override;
+    virtual Adesk::UInt32 subSetAttributes(AcGiDrawableTraits* traits) override;
 
 public:
     virtual Acad::ErrorStatus  subGetOsnapPoints(
@@ -101,15 +101,38 @@ public:
     Adesk::Boolean drawTriangles(AcGiSubEntityTraits& traits, AcGiWorldGeometry& geo) const;
     Adesk::Boolean drawContours(AcGiSubEntityTraits& traits, AcGiWorldGeometry& geo) const;
 
-    void setPoints(const CePoints& points);
-    void recompute();
-    void createTree();
-    void computeTiangles();
-    void genCountours();
+    void        setPoints(const CePoints& points);
+    void        recompute();
+    void        createTree();
+    void        computeTiangles();
+    void        genCountours();
 
+    AcCmColor   pointColor() const;
+    void        setpointColor(const AcCmColor& val);
+    AcCmColor   tinColor() const;
+    void        setTinColor(const AcCmColor& val);
+    AcCmColor   majorContourColor() const;
+    void        setMajorContourColor(const AcCmColor& val);
+    AcCmColor   getMinorContourColor() const;
+    void        setMinorContourColor(const AcCmColor& val);
+
+    double      getMajorZ() const;
+    void        setMajorZ(double val);
+    double      getMinorZ() const;
+    void        setMinorZ(double val);
 
 protected:
+    //filed
     CePoints m_points;
+    AcCmColor m_pointColor;
+    AcCmColor m_tinColor;
+    AcCmColor m_minorContourColor;
+    AcCmColor m_majorContourColor;
+    double m_majorZ = 0.0;
+    double m_minorZ = 0.0;
+    DrawFlags m_drawFlags = kDrawTin;
+
+    //not filed
     CePolylines m_plines;
     CeTriangles m_triangles;
     KdAcGePointAdapter m_adapter{ m_points };
@@ -117,19 +140,6 @@ protected:
     double m_zmin = std::numeric_limits<int64_t>::max();
     double m_zmax = std::numeric_limits<int64_t>::min();
 
-    //major z
-    //major clr
-
-    //minor z
-    //minor clr
-
-    //pnt color
-    //tin color
-    //contour color
-
-    bool m_drawPoints = true;
-    bool m_drawTin = true;
-    bool m_drawContours = true;
     bool m_dirty = false;
 };
 

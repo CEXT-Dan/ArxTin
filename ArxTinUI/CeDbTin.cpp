@@ -51,9 +51,6 @@ CextDbTin::CextDbTin(const CePoints & points)
 
 }
 
-//-----------------------------------------------------------------------------
-//----- AcDbObject protocols
-//- Dwg Filing protocol
 Acad::ErrorStatus CextDbTin::dwgOutFields(AcDbDwgFiler * pFiler) const
 {
     assertReadEnabled();
@@ -62,6 +59,16 @@ Acad::ErrorStatus CextDbTin::dwgOutFields(AcDbDwgFiler * pFiler) const
         return (es);
     if ((es = pFiler->writeUInt32(CextDbTin::kCurrentVersionNumber)) != Acad::eOk)
         return (es);
+
+    m_pointColor.dwgOutAsTrueColor(pFiler);
+    m_tinColor.dwgOutAsTrueColor(pFiler);
+    m_minorContourColor.dwgOutAsTrueColor(pFiler);
+    m_majorContourColor.dwgOutAsTrueColor(pFiler);
+    pFiler->writeDouble(m_minorZ);
+    pFiler->writeDouble(m_majorZ);
+    pFiler->writeInt32(m_drawFlags);
+
+
     if (es = pFiler->writeInt64(Adesk::Int64(m_points.size())); es != eOk)
         return (es);
     for (const auto& p : m_points)
@@ -87,6 +94,17 @@ Acad::ErrorStatus CextDbTin::dwgInFields(AcDbDwgFiler * pFiler)
     //
     if (version < CextDbTin::kCurrentVersionNumber)
         return (Acad::eMakeMeProxy);
+
+    m_pointColor.dwgInAsTrueColor(pFiler);
+    m_tinColor.dwgInAsTrueColor(pFiler);
+    m_minorContourColor.dwgInAsTrueColor(pFiler);
+    m_majorContourColor.dwgInAsTrueColor(pFiler);
+    pFiler->readDouble(&m_minorZ);
+    pFiler->readDouble(&m_majorZ);
+
+    Adesk::Int32 tmpFlags = 0;
+    pFiler->readInt32(&tmpFlags);
+    m_drawFlags = static_cast<DrawFlags>(tmpFlags);
 
     Adesk::Int64 npoints = 0;
     if (es = pFiler->readInt64(&npoints); es != eOk)
@@ -203,8 +221,6 @@ Acad::ErrorStatus CextDbTin::subClose()
     return (AcDbEntity::subClose());
 }
 
-//-----------------------------------------------------------------------------
-//----- AcDbEntity protocols
 Adesk::Boolean CextDbTin::subWorldDraw(AcGiWorldDraw * mode)
 {
     assertReadEnabled();
@@ -293,7 +309,7 @@ static bool isMultiple(double a, double b) {
 Adesk::Boolean CextDbTin::drawPoints(AcGiSubEntityTraits & traits, AcGiWorldGeometry & geo) const
 {
     traits.setColor(6);
-    if (m_drawPoints)
+    if (GETBIT(m_drawFlags, kDrawPoints))
     {
         geo.polypoint(m_points.size(), m_points.data());
     }
@@ -303,7 +319,7 @@ Adesk::Boolean CextDbTin::drawPoints(AcGiSubEntityTraits & traits, AcGiWorldGeom
 Adesk::Boolean CextDbTin::drawTriangles(AcGiSubEntityTraits & traits, AcGiWorldGeometry & geo) const
 {
     traits.setColor(139);
-    if (m_drawTin)
+    if (GETBIT(m_drawFlags, kDrawTin))
     {
         for (const auto& tri : m_triangles)
         {
@@ -315,7 +331,7 @@ Adesk::Boolean CextDbTin::drawTriangles(AcGiSubEntityTraits & traits, AcGiWorldG
 
 Adesk::Boolean CextDbTin::drawContours(AcGiSubEntityTraits & traits, AcGiWorldGeometry & geo) const
 {
-    if (m_drawContours)
+    if (GETBIT(m_drawFlags, kDrawContours))
     {
         for (const auto& pline : m_plines)
         {
@@ -502,6 +518,72 @@ void CextDbTin::genCountours()
     }
     auto contours = generateContours(m_triangles, contourLevels);
     m_plines = connectSegmentsIntoPolylines(contours);
+}
+
+AcCmColor CextDbTin::pointColor() const
+{
+    return m_pointColor;
+}
+
+void CextDbTin::setpointColor(const AcCmColor& val)
+{
+    assertWriteEnabled();
+    m_pointColor = val;
+}
+
+AcCmColor CextDbTin::tinColor() const
+{
+    return m_tinColor;
+}
+
+void CextDbTin::setTinColor(const AcCmColor& val)
+{
+    assertWriteEnabled();
+    m_tinColor = val;
+}
+
+AcCmColor CextDbTin::majorContourColor() const
+{
+    return m_majorContourColor;
+}
+
+void CextDbTin::setMajorContourColor(const AcCmColor& val)
+{
+    assertWriteEnabled();
+    m_majorContourColor = val;
+}
+
+AcCmColor CextDbTin::getMinorContourColor() const
+{
+    return m_minorContourColor;
+}
+
+void CextDbTin::setMinorContourColor(const AcCmColor& val)
+{
+    assertWriteEnabled();
+    m_minorContourColor = val;
+}
+
+double CextDbTin::getMajorZ() const
+{
+    return m_majorZ;
+}
+
+void CextDbTin::setMajorZ(double val)
+{
+    assertWriteEnabled();
+    m_majorZ = val;
+}
+
+double CextDbTin::getMinorZ() const
+{
+    return m_minorZ;
+}
+
+void CextDbTin::setMinorZ(double val)
+{
+    assertWriteEnabled();
+    m_minorZ = val;
 }
 
 void CextDbTin::createTree()

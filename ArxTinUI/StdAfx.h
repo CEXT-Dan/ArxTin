@@ -109,13 +109,19 @@
 //-----------------------------------------------------------------------------
 #include "DocData.h" //- Your document specific data class holder
 
+//-----------------------------------------------------------------------------
+#include "nanoflann.hpp"
+
+
+#define SETBIT(flags, bit, value) ((value) ? (flags |= (bit)) : (flags &= ~(bit)))
+#define GETBIT(flags, bit) (((flags) & (bit)) ? true : false)
+
 #if defined(_GRXAPP)
 #pragma comment( lib , "gcad.lib" )
 #pragma comment( lib , "gcbase.lib" )
 #pragma comment( lib , "gccore.lib" )
 #pragma comment( lib , "gcdb.lib" )
 #endif
-
 
 //- Declare it as an extern here so that it becomes available in all modules
 extern AcApDataManager<CDocData> DocVars;
@@ -126,7 +132,6 @@ using AcResBufPtr = std::unique_ptr < resbuf, decltype([](resbuf* ptr) noexcept
     {
         acutRelRb(ptr);
     }) > ;
-
 
 //-------------------------------------------------------------------------------------
 //AcDbObjectUPtr
@@ -155,8 +160,6 @@ inline AcDbObjectUPtr<T> openObjectId(const AcDbObjectId& id, AcDb::OpenMode mod
     es = acdbOpenObject<T>(pobj, id, mode, erased);
     return AcDbObjectUPtr<T>(pobj);
 }
-
-#include "nanoflann.hpp"
 
 using CeTriangle = std::array<AcGePoint3d, 3>;
 using CeTriangles = std::vector<CeTriangle>;
