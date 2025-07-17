@@ -340,10 +340,13 @@ Adesk::Boolean CextDbTin::drawTriangles(AcGiSubEntityTraits & traits, AcGiWorldG
     traits.setTrueColor(m_tinColor.entityColor());
     if (GETBIT(int(m_drawFlags), int(DrawFlags::kDrawTin)))
     {
+        std::array<AcGePoint3d, 3>pnts;
         for (const auto& tri : m_triangles)
         {
-            std::array<AcGePoint3d, 3>item{ m_points[tri[0]],m_points[tri[1]],m_points[tri[2]] };
-            geo.polygon(item.size(), item.data());
+            pnts[0] = m_points[tri[0]];
+            pnts[1] = m_points[tri[1]];
+            pnts[2] = m_points[tri[2]];
+            geo.polygon(pnts.size(), pnts.data());
         }
     }
     return Adesk::kTrue;
