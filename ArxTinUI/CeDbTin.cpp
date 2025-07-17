@@ -484,9 +484,9 @@ static void connectSegmentsIntoPolylines(const CeSegments& segments, CePolylines
         if (visited.count(&seg))
             continue;
 
-        CePolyline polyline;
-        polyline.push_back(seg.first);
-        polyline.push_back(seg.second);
+        CePolyline polyline, first, sec;
+        sec.push_back(seg.second);
+        first.push_back(seg.first);
         visited.insert(&seg);
 
         // Extend forward
@@ -500,18 +500,21 @@ static void connectSegmentsIntoPolylines(const CeSegments& segments, CePolylines
                 const CeSegment* nextSeg = it->second;
                 if (visited.contains(nextSeg))
                     continue;
-                // Find the next point to extend
-                AcGePoint3d nextPoint;
+
+                if (current.isEqualTo(nextSeg->first))
                 {
-                    if (current.isEqualTo(nextSeg->first))
-                        nextPoint = nextSeg->second;
-                    else if (current.isEqualTo(nextSeg->second))
-                        nextPoint = nextSeg->first;
-                    else
-                        continue;
+                    first.push_back(nextSeg->second);
+                    current = nextSeg->second;
                 }
-                polyline.push_back(nextPoint);
-                current = nextPoint;
+                else if (current.isEqualTo(nextSeg->second))
+                {
+                    first.push_back(nextSeg->first);
+                    current = nextSeg->first;
+                }
+                else
+                {
+                    continue;
+                }
                 visited.insert(nextSeg);
                 extended = true;
                 break;
@@ -526,21 +529,26 @@ static void connectSegmentsIntoPolylines(const CeSegments& segments, CePolylines
         {
             bool extended = false;
             auto range = pointToSegs.equal_range(current);
-            for (auto it = range.first; it != range.second; ++it) {
+            for (auto it = range.first; it != range.second; ++it)
+            {
                 const CeSegment* prevSeg = it->second;
                 if (visited.contains(prevSeg))
                     continue;
-                AcGePoint3d prevPoint;
+
+                if (current.isEqualTo(prevSeg->first))
                 {
-                    if (current.isEqualTo(prevSeg->first))
-                        prevPoint = prevSeg->second;
-                    else if (current.isEqualTo(prevSeg->second))
-                        prevPoint = prevSeg->first;
-                    else
-                        continue;
+                    sec.push_back(prevSeg->second);
+                    current = prevSeg->second;
                 }
-                polyline.insert(polyline.begin(), prevPoint);
-                current = prevPoint;
+                else if (current.isEqualTo(prevSeg->second))
+                {
+                    sec.push_back(prevSeg->first);
+                    current = prevSeg->first;
+                }
+                else
+                {
+                    continue;
+                }
                 visited.insert(prevSeg);
                 extended = true;
                 break;
@@ -548,6 +556,9 @@ static void connectSegmentsIntoPolylines(const CeSegments& segments, CePolylines
             if (!extended)
                 break;
         }
+        polyline.reserve(first.size() + sec.size());
+        polyline.insert(polyline.end(), sec.rbegin(), sec.rend());
+        polyline.insert(polyline.end(), first.begin(), first.end());
         polylines.push_back(polyline);
     }
 }
