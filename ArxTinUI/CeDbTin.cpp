@@ -380,10 +380,18 @@ void CextDbTin::recompute(bool force /*= false*/)
 {
     if (m_dirty || force)
     {
+        //PerfTimer timer1(L"\nbegin computeTiangles");
         computeTiangles();
+        //timer1.end(L"end computeTiangles");
+
+        //PerfTimer timer2(L"\nbegin Contours");
         genMajorContours();
         genMinorContours();
+        //timer2.end(L"end Contours");
+
+        //PerfTimer timer3(L"\nbegin tree");
         createTree();
+        //timer3.end(L"end tree");
         m_dirty = false;
     }
 }
@@ -464,6 +472,8 @@ static void connectSegmentsIntoPolylines(const CeSegments& segments, CePolylines
     // Map from point to all segments starting or ending at that point
     std::unordered_set<const CeSegment*, SegmentPtrHash> visited;
     std::unordered_multimap<AcGePoint3d, const CeSegment*, Point3DHash> pointToSegs;
+    visited.reserve(segments.size());
+    pointToSegs.reserve(segments.size() * 2);
     for (const auto& seg : segments)
     {
         pointToSegs.emplace(seg.first, &seg);
@@ -488,7 +498,7 @@ static void connectSegmentsIntoPolylines(const CeSegments& segments, CePolylines
             for (auto it = range.first; it != range.second; ++it)
             {
                 const CeSegment* nextSeg = it->second;
-                if (visited.count(nextSeg))
+                if (visited.contains(nextSeg))
                     continue;
                 // Find the next point to extend
                 AcGePoint3d nextPoint;
@@ -518,7 +528,7 @@ static void connectSegmentsIntoPolylines(const CeSegments& segments, CePolylines
             auto range = pointToSegs.equal_range(current);
             for (auto it = range.first; it != range.second; ++it) {
                 const CeSegment* prevSeg = it->second;
-                if (visited.count(prevSeg))
+                if (visited.contains(prevSeg))
                     continue;
                 AcGePoint3d prevPoint;
                 {
@@ -645,6 +655,7 @@ void CextDbTin::genMajorContours()
         contourLevels.push_back(nearest);
         m_contourSet.insert(nearest);
     }
+    m_minorContours.reserve(contourLevels.size());
     connectSegmentsIntoPolylines(generateContours(m_points, m_triangles, contourLevels), m_majorContours);
 }
 
@@ -660,6 +671,7 @@ void CextDbTin::genMinorContours()
         if (!m_contourSet.contains(nearest))
             contourLevels.push_back(nearest);
     }
+    m_minorContours.reserve(contourLevels.size());
     connectSegmentsIntoPolylines(generateContours(m_points, m_triangles, contourLevels), m_minorContours);
 }
 
