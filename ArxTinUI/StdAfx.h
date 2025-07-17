@@ -161,7 +161,7 @@ inline AcDbObjectUPtr<T> openObjectId(const AcDbObjectId& id, AcDb::OpenMode mod
     return AcDbObjectUPtr<T>(pobj);
 }
 
-using CeTriangle = std::array<AcGePoint3d, 3>;
+using CeTriangle = std::array<size_t, 3>;
 using CeTriangles = std::vector<CeTriangle>;
 using CeSegment = std::pair<AcGePoint3d, AcGePoint3d>;
 using CeSegments = std::vector<CeSegment>;

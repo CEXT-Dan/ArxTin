@@ -342,7 +342,8 @@ Adesk::Boolean CextDbTin::drawTriangles(AcGiSubEntityTraits & traits, AcGiWorldG
     {
         for (const auto& tri : m_triangles)
         {
-            geo.polygon(tri.size(), tri.data());
+            std::array<AcGePoint3d, 3>item{ m_points[tri[0]],m_points[tri[1]],m_points[tri[2]] };
+            geo.polygon(item.size(), item.data());
         }
     }
     return Adesk::kTrue;
@@ -472,13 +473,13 @@ static auto interpolate(const AcGePoint3d & a, const AcGePoint3d & b, double con
     };
 }
 
-static void processTriangle(const CeTriangle & tri, double contourLevel, CeSegments & segments)
+static void processTriangle(const CePoints &points, const CeTriangle & tri, double contourLevel, CeSegments & segments)
 {
     CePoints crossings;
     for (int i = 0; i < 3; ++i)
     {
-        const AcGePoint3d& a = tri[i];
-        const AcGePoint3d& b = tri[(i + 1) % 3];
+        const AcGePoint3d& a = points[tri[i]];
+        const AcGePoint3d& b = points[tri[(i + 1) % 3]];
         if ((a.z < contourLevel && b.z > contourLevel) ||
             (a.z > contourLevel && b.z < contourLevel))
         {
@@ -489,13 +490,13 @@ static void processTriangle(const CeTriangle & tri, double contourLevel, CeSegme
         segments.emplace_back(crossings[0], crossings[1]);
 }
 
-static auto generateContours(const CeTriangles & triangles, const CeContourLevels & contourLevels) -> CeSegments
+static auto generateContours(const CePoints& points,const CeTriangles& triangles, const CeContourLevels& contourLevels) -> CeSegments
 {
     CeSegments segments;
     for (const auto& tri : triangles)
     {
         for (double level : contourLevels)
-            processTriangle(tri, level, segments);
+            processTriangle(points,tri, level, segments);
     }
     return segments;
 }
@@ -523,13 +524,7 @@ void CextDbTin::computeTiangles()
 
     for (size_t i = 0; i < d.triangles.size(); i += 3)
     {
-        CeTriangle tri;
-        const size_t a = d.triangles[i + 0];
-        const size_t b = d.triangles[i + 1];
-        const size_t c = d.triangles[i + 2];
-        tri[0].set(m_points[a].x, m_points[a].y, m_points[a].z);
-        tri[1].set(m_points[b].x, m_points[b].y, m_points[b].z);
-        tri[2].set(m_points[c].x, m_points[c].y, m_points[c].z);
+        CeTriangle tri{ d.triangles[i + 0] ,d.triangles[i + 1] , d.triangles[i + 2] };
         m_triangles.push_back(tri);
     }
 }
@@ -542,7 +537,7 @@ void CextDbTin::genMajorContours()
     CeContourLevels contourLevels;
     for (int64_t idx = int64_t(m_zmin); idx < int64_t(m_zmax); idx += m_majorZ)
         contourLevels.push_back(roundToNearest(idx, m_majorZ));
-    auto contours = generateContours(m_triangles, contourLevels);
+    auto contours = generateContours(m_points, m_triangles, contourLevels);
     m_majorContours = connectSegmentsIntoPolylines(contours);
 }
 
@@ -554,7 +549,7 @@ void CextDbTin::genMinorContours()
     CeContourLevels contourLevels;
     for (int64_t idx = int64_t(m_zmin); idx < int64_t(m_zmax); idx += m_minorZ)
         contourLevels.push_back(roundToNearest(idx, m_minorZ));
-    auto contours = generateContours(m_triangles, contourLevels);
+    auto contours = generateContours(m_points, m_triangles, contourLevels);
     m_minorContours = connectSegmentsIntoPolylines(contours);
 }
 
