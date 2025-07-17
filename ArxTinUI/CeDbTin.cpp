@@ -229,6 +229,14 @@ Acad::ErrorStatus CextDbTin::subClose()
     return (AcDbEntity::subClose());
 }
 
+void CextDbTin::subList() const
+{
+    assertReadEnabled();
+    AcDbEntity::subList();
+    acutPrintf(_T("\nNumber of Points = %ld"), m_points.size());
+    acutPrintf(_T("\nMin = %f, max = %f"), m_zmin, m_zmax);
+}
+
 Adesk::Boolean CextDbTin::subWorldDraw(AcGiWorldDraw * mode)
 {
     assertReadEnabled();

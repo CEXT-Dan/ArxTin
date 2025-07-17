@@ -85,6 +85,8 @@ public:
     virtual Acad::ErrorStatus subErase(Adesk::Boolean erasing) override;
     virtual Acad::ErrorStatus subCancel() override;
     virtual Acad::ErrorStatus subClose() override;
+    virtual void subList() const override;
+
 
 protected:
     virtual Adesk::Boolean subWorldDraw(AcGiWorldDraw* mode) override;
