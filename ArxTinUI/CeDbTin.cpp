@@ -324,7 +324,7 @@ Acad::ErrorStatus CextDbTin::subExplode(AcDbVoidPtrArray& entitySet) const
         for (const auto& ctline : m_majorContours)
         {
             AcDbPolyline* pline = new AcDbPolyline(ctline.size());
-            for (UInt32 idx = 0 ; idx < ctline.size(); idx++)
+            for (UInt32 idx = 0; idx < ctline.size(); idx++)
             {
                 if (idx == 0)
                     pline->setElevation(ctline[idx].z);
@@ -427,7 +427,7 @@ Adesk::Boolean CextDbTin::drawContours(AcGiSubEntityTraits& traits, AcGiWorldGeo
             traits.setTrueColor(m_minorContourColor.entityColor());
             if (pline.size())
             {
-                if (isMultiple(pline[0].z, m_minorZ)) 
+                if (isMultiple(pline[0].z, m_minorZ))
                     geo.polyline(pline.size(), pline.data());
             }
         }
@@ -583,6 +583,29 @@ static void getCoords(const CePoints& points, CeCoords& outCoords, double& zmin,
     }
 }
 
+static double area3dOfTriangle(const AcGePoint3d& point1, const AcGePoint3d& point2, const AcGePoint3d& point3)
+{
+    AcGeVector3d vector1 = AcGeVector3d(point2 - point1);
+    AcGeVector3d vector2 = AcGeVector3d(point3 - point1);
+    AcGeVector3d crossProduct = vector1.crossProduct(vector2);
+    double magnitude = crossProduct.length();
+    return 0.5 * magnitude;;
+}
+
+static double area2dOfTriangle(const AcGePoint3d& point1, const AcGePoint3d& point2, const AcGePoint3d& point3)
+{
+    static AcGePoint3d _point1;
+    static AcGePoint3d _point2;
+    static AcGePoint3d _point3;
+    _point1 = point1;
+    _point2 = point2;
+    _point3 = point3;
+    _point1.z = 0.0;
+    _point2.z = 0.0;
+    _point3.z = 0.0;
+    return area3dOfTriangle(_point1, _point2, _point3);
+}
+
 void CextDbTin::computeTiangles()
 {
     m_triangles.clear();
@@ -594,7 +617,12 @@ void CextDbTin::computeTiangles()
 
     for (size_t i = 0; i < d.triangles.size(); i += 3)
     {
-        m_triangles.emplace_back(CeTriangle{ d.triangles[i + 0] ,d.triangles[i + 1] , d.triangles[i + 2] });
+        const auto a = d.triangles[i + 0];
+        const auto b = d.triangles[i + 1];
+        const auto c = d.triangles[i + 2];
+        m_triangles.emplace_back(CeTriangle{ a, b, c });
+        m_area3d += area3dOfTriangle(m_points[a], m_points[b], m_points[c]);
+        m_area2d += area2dOfTriangle(m_points[a], m_points[b], m_points[c]);
     }
 }
 
@@ -693,6 +721,16 @@ void CextDbTin::setMinorZ(double val)
 {
     assertWriteEnabled();
     m_minorZ = val;
+}
+
+double CextDbTin::area2d() const
+{
+    return m_area2d;
+}
+
+double CextDbTin::area3d() const
+{
+    return m_area3d;
 }
 
 CextDbTin::DrawFlags CextDbTin::drawFlags() const

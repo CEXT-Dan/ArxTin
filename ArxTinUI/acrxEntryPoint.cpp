@@ -86,10 +86,12 @@ public:
             acutPrintf(_T("\nOOF"));
             return;
         }
-        PerfTimer timer(__FUNCTIONW__);
+        
         auto points = getGePoints(ids);
         AcDbDatabase* pDb = acdbCurDwg();
         AcDbBlockTableRecordPointer model(acdbSymUtil()->blockModelSpaceId(pDb), AcDb::OpenMode::kForWrite);
+
+        PerfTimer timer(__FUNCTIONW__);
         CextDbTinUPtr ptin(new CextDbTin(points));
 
         //what to draw
@@ -119,7 +121,14 @@ public:
         ptin->setMajorContourColor(majcolor);
 
         model->appendAcDbEntity(ptin.get());
+
+        ptin->recompute();
+
         timer.end(_T("Done: "));
+
+        acutPrintf(_T("\narea2 = %lf, area3 = %lf"), ptin->area2d(), ptin->area3d());
+
+    
     }
 };
 

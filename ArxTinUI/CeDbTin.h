@@ -133,6 +133,8 @@ public:
     void        setMajorZ(double val);
     double      minorZ() const;
     void        setMinorZ(double val);
+    double      area2d() const;
+    double      area3d() const;
 
     AcCmTransparency pointTransparency() const;
     void             setPointTransparency(const AcCmTransparency &val);
@@ -172,10 +174,12 @@ protected:
     std::shared_ptr<kd_tree3d_t> m_pTree;
     double m_zmin = std::numeric_limits<int64_t>::max();
     double m_zmax = std::numeric_limits<int64_t>::min();
-
     std::unordered_set<double> m_contourSet;
 
-    bool m_dirty = false;
+    double m_area2d = 0.0;
+    double m_area3d = 0.0;
+
+    bool m_dirty = true;
 };
 
 #ifdef ARXTINUI_MODULE
