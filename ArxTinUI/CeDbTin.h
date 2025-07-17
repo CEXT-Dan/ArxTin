@@ -132,6 +132,15 @@ public:
     double      minorZ() const;
     void        setMinorZ(double val);
 
+    AcCmTransparency pointTransparency() const;
+    void             setPointTransparency(const AcCmTransparency &val);
+    AcCmTransparency tinTransparency() const;
+    void             setTinTransparency(const AcCmTransparency& val);
+    AcCmTransparency minorTransparency() const;
+    void             setMinorTransparency(const AcCmTransparency& val);
+    AcCmTransparency majorTransparency() const;
+    void             setMajorTransparency(const AcCmTransparency& val);
+
     CextDbTin::DrawFlags drawFlags() const;
     void                 setDrawFlags(CextDbTin::DrawFlags val);
 
@@ -142,6 +151,12 @@ protected:
     AcCmColor m_tinColor;
     AcCmColor m_minorContourColor;
     AcCmColor m_majorContourColor;
+
+    AcCmTransparency m_pointTransparency;
+    AcCmTransparency m_tinTransparency;
+    AcCmTransparency m_minorTransparency;
+    AcCmTransparency m_majorTransparency;
+
     double m_majorZ = 0.0;
     double m_minorZ = 0.0;
     DrawFlags m_drawFlags = DrawFlags::kDrawTin;

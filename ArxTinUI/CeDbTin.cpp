@@ -34,7 +34,7 @@ ACRX_DXF_DEFINE_MEMBERS(
     CextDbTin, AcDbEntity,
     AcDb::kDHL_CURRENT, AcDb::kMReleaseCurrent,
     CExtProxyFlags, CEXTDBTIN,
-    "CEXTDBTIN|Product Desc: A TIN for CAD|Company: CadExt|WEB Address: github.com/CEXT-Dan/ArxTin"
+    "CEXTDBTIN|Product Desc:  A TIN for CAD|Company:        CadExt|WEB Address:  github.com/CEXT-Dan/ArxTin"
 )
 
 //-----------------------------------------------------------------------------
@@ -60,13 +60,19 @@ Acad::ErrorStatus CextDbTin::dwgOutFields(AcDbDwgFiler* pFiler) const
     m_tinColor.dwgOutAsTrueColor(pFiler);
     m_minorContourColor.dwgOutAsTrueColor(pFiler);
     m_majorContourColor.dwgOutAsTrueColor(pFiler);
+
+    pFiler->writeUInt32(m_pointTransparency.serializeOut());
+    pFiler->writeUInt32(m_tinTransparency.serializeOut());
+    pFiler->writeUInt32(m_minorTransparency.serializeOut());
+    pFiler->writeUInt32(m_majorTransparency.serializeOut());
+
     pFiler->writeDouble(m_minorZ);
     pFiler->writeDouble(m_majorZ);
+
     pFiler->writeInt32(static_cast<Adesk::Int32>(m_drawFlags));
     pFiler->writeInt32(static_cast<Adesk::Int32>(m_tinFlags));
 
-
-    if (es = pFiler->writeInt64(Adesk::Int64(m_points.size())); es != eOk)
+    if (es = pFiler->writeUInt64(Adesk::UInt64(m_points.size())); es != eOk)
         return (es);
     for (const auto& p : m_points)
     {
@@ -96,9 +102,22 @@ Acad::ErrorStatus CextDbTin::dwgInFields(AcDbDwgFiler* pFiler)
     m_tinColor.dwgInAsTrueColor(pFiler);
     m_minorContourColor.dwgInAsTrueColor(pFiler);
     m_majorContourColor.dwgInAsTrueColor(pFiler);
+    {//Transparency
+        Adesk::UInt32 tmptr = 0;
+        pFiler->readUInt32(&tmptr);
+        m_pointTransparency.serializeIn(tmptr);
+        tmptr = 0;
+        pFiler->readUInt32(&tmptr);
+        m_tinTransparency.serializeIn(tmptr);
+        tmptr = 0;
+        pFiler->readUInt32(&tmptr);
+        m_minorTransparency.serializeIn(tmptr);
+        tmptr = 0;
+        pFiler->readUInt32(&tmptr);
+        m_majorTransparency.serializeIn(tmptr);
+    }
     pFiler->readDouble(&m_minorZ);
     pFiler->readDouble(&m_majorZ);
-
     {//flags
         Adesk::Int32 tmpFlags = 0;
         pFiler->readInt32(&tmpFlags);
@@ -108,11 +127,9 @@ Acad::ErrorStatus CextDbTin::dwgInFields(AcDbDwgFiler* pFiler)
         pFiler->readInt32(&tmpFlags);
         m_tinFlags = static_cast<TinFlags>(tmpFlags);
     }
-
-    Adesk::Int64 npoints = 0;
-    if (es = pFiler->readInt64(&npoints); es != eOk)
+    Adesk::UInt64 npoints = 0;
+    if (es = pFiler->readUInt64(&npoints); es != eOk)
         return es;
-
     m_points.clear();
     m_points.reserve(npoints);
     for (Adesk::Int64 idx = 0; idx < npoints; idx++)
@@ -324,9 +341,10 @@ static bool isMultiple(double a, double b)
 
 Adesk::Boolean CextDbTin::drawPoints(AcGiSubEntityTraits& traits, AcGiWorldGeometry& geo) const
 {
-    traits.setTrueColor(m_pointColor.entityColor());
     if (GETBIT(int(m_drawFlags), int(DrawFlags::kDrawPoints)))
     {
+        traits.setTransparency(m_pointTransparency);
+        traits.setTrueColor(m_pointColor.entityColor());
         geo.polypoint(m_points.size(), m_points.data());
     }
     return Adesk::kTrue;
@@ -334,9 +352,10 @@ Adesk::Boolean CextDbTin::drawPoints(AcGiSubEntityTraits& traits, AcGiWorldGeome
 
 Adesk::Boolean CextDbTin::drawTriangles(AcGiSubEntityTraits& traits, AcGiWorldGeometry& geo) const
 {
-    traits.setTrueColor(m_tinColor.entityColor());
     if (GETBIT(int(m_drawFlags), int(DrawFlags::kDrawTin)))
     {
+        traits.setTransparency(m_tinTransparency);
+        traits.setTrueColor(m_tinColor.entityColor());
         std::array<AcGePoint3d, 3>pnts;
         for (const auto& tri : m_triangles)
         {
@@ -355,20 +374,22 @@ Adesk::Boolean CextDbTin::drawContours(AcGiSubEntityTraits& traits, AcGiWorldGeo
     {
         for (const auto& pline : m_minorContours)
         {
+            traits.setTransparency(m_minorTransparency);
+            traits.setTrueColor(m_minorContourColor.entityColor());
             if (pline.size())
             {
-                if (isMultiple(pline[0].z, m_minorZ))
-                    traits.setTrueColor(m_minorContourColor.entityColor());
-                geo.polyline(pline.size(), pline.data());
+                if (isMultiple(pline[0].z, m_minorZ)) 
+                    geo.polyline(pline.size(), pline.data());
             }
         }
         for (const auto& pline : m_majorContours)
         {
             if (pline.size())
             {
+                traits.setTransparency(m_majorTransparency);
+                traits.setTrueColor(m_majorContourColor.entityColor());
                 if (isMultiple(pline[0].z, m_majorZ))
-                    traits.setTrueColor(m_majorContourColor.entityColor());
-                geo.polyline(pline.size(), pline.data());
+                    geo.polyline(pline.size(), pline.data());
             }
         }
     }
@@ -626,6 +647,50 @@ void CextDbTin::setDrawFlags(DrawFlags val)
 {
     assertWriteEnabled();
     m_drawFlags = val;
+}
+
+AcCmTransparency CextDbTin::pointTransparency() const
+{
+    return m_pointTransparency;
+}
+
+void CextDbTin::setPointTransparency(const AcCmTransparency& val)
+{
+    assertWriteEnabled();
+    m_pointTransparency = val;
+}
+
+AcCmTransparency CextDbTin::tinTransparency() const
+{
+    return m_tinTransparency;
+}
+
+void CextDbTin::setTinTransparency(const AcCmTransparency& val)
+{
+    assertWriteEnabled();
+    m_tinTransparency = val;
+}
+
+AcCmTransparency CextDbTin::minorTransparency() const
+{
+    return m_minorTransparency;
+}
+
+void CextDbTin::setMinorTransparency(const AcCmTransparency& val)
+{
+    assertWriteEnabled();
+    m_minorTransparency = val;
+}
+
+AcCmTransparency CextDbTin::majorTransparency() const
+{
+    return m_majorTransparency;
+}
+
+void CextDbTin::setMajorTransparency(const AcCmTransparency& val)
+{
+    assertWriteEnabled();
+    m_majorTransparency = val;
 }
 
 void CextDbTin::createTree()
