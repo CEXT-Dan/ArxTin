@@ -95,12 +95,13 @@ public:
         CextDbTinUPtr ptin(new CextDbTin(points));
 
         //what to draw
-       /* CextDbTin::DrawFlags flags = static_cast<CextDbTin::DrawFlags>(
+       CextDbTin::DrawFlags flags = static_cast<CextDbTin::DrawFlags>(
             int32_t(CextDbTin::DrawFlags::kDrawTin) |
-            int32_t(CextDbTin::DrawFlags::kDrawContours));*/
-
-        CextDbTin::DrawFlags flags = static_cast<CextDbTin::DrawFlags>(
             int32_t(CextDbTin::DrawFlags::kDrawContours));
+
+        //CextDbTin::DrawFlags flags = static_cast<CextDbTin::DrawFlags>(
+            //int32_t(CextDbTin::DrawFlags::kDrawContours));
+
         ptin->setDrawFlags(flags);
 
         AcCmColor tincolor;

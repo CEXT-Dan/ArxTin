@@ -459,19 +459,16 @@ Adesk::Boolean CextDbTin::drawContours(AcGiSubEntityTraits& traits, AcGiWorldGeo
     return Adesk::kTrue;
 }
 
-static auto connectSegmentsIntoPolylines(const CeSegments& segments) -> CePolylines
+static void connectSegmentsIntoPolylines(const CeSegments& segments, CePolylines& polylines)
 {
     // Map from point to all segments starting or ending at that point
+    std::unordered_set<const CeSegment*, SegmentPtrHash> visited;
     std::unordered_multimap<AcGePoint3d, const CeSegment*, Point3DHash> pointToSegs;
     for (const auto& seg : segments)
     {
         pointToSegs.emplace(seg.first, &seg);
         pointToSegs.emplace(seg.second, &seg);
     }
-
-    std::unordered_set<const CeSegment*, SegmentPtrHash> visited;
-    CePolylines polylines;
-
     for (const auto& seg : segments)
     {
         if (visited.count(&seg))
@@ -543,7 +540,6 @@ static auto connectSegmentsIntoPolylines(const CeSegments& segments) -> CePolyli
         }
         polylines.push_back(polyline);
     }
-    return polylines;
 }
 
 static auto interpolate(const AcGePoint3d& a, const AcGePoint3d& b, double contourLevel) -> AcGePoint3d
@@ -645,12 +641,11 @@ void CextDbTin::genMajorContours()
     CeContourLevels contourLevels;
     for (int64_t idx = int64_t(m_zmin); idx < int64_t(m_zmax); idx += m_majorZ)
     {
-        auto nearest = roundToNearest(idx, m_majorZ);
+        const auto nearest = roundToNearest(idx, m_majorZ);
         contourLevels.push_back(nearest);
         m_contourSet.insert(nearest);
     }
-
-    m_majorContours = connectSegmentsIntoPolylines(generateContours(m_points, m_triangles, contourLevels));
+    connectSegmentsIntoPolylines(generateContours(m_points, m_triangles, contourLevels), m_majorContours);
 }
 
 void CextDbTin::genMinorContours()
@@ -661,11 +656,11 @@ void CextDbTin::genMinorContours()
     CeContourLevels contourLevels;
     for (int64_t idx = int64_t(m_zmin); idx < int64_t(m_zmax); idx += m_minorZ)
     {
-        auto nearest = roundToNearest(idx, m_minorZ);
+        const auto nearest = roundToNearest(idx, m_minorZ);
         if (!m_contourSet.contains(nearest))
             contourLevels.push_back(nearest);
     }
-    m_minorContours = connectSegmentsIntoPolylines(generateContours(m_points, m_triangles, contourLevels));
+    connectSegmentsIntoPolylines(generateContours(m_points, m_triangles, contourLevels), m_minorContours);
 }
 
 AcCmColor CextDbTin::pointColor() const
