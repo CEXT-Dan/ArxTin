@@ -247,8 +247,12 @@ void CextDbTin::subList() const
 {
     assertReadEnabled();
     AcDbEntity::subList();
-    acutPrintf(_T("\nNumber of Points = %ld"), m_points.size());
-    acutPrintf(_T("\nMin = %f, max = %f"), m_zmin, m_zmax);
+    acutPrintf(_T("\nNumber of points:     %ld"), m_points.size());
+    acutPrintf(_T("\nNumber of triangles:  %ld"), m_triangles.size());
+    acutPrintf(_T("\nMinimum elevation:    %lf"), m_zmin);
+    acutPrintf(_T("\nMaximum elevation:    %lf"), m_zmax);
+    acutPrintf(_T("\n          2D area:    %lf"), m_area2d);
+    acutPrintf(_T("\n          3D area:    %lf"), m_area3d);
 }
 
 Adesk::Boolean CextDbTin::subWorldDraw(AcGiWorldDraw* mode)
@@ -604,6 +608,8 @@ static double area2dOfTriangle(const AcGePoint3d& point1, const AcGePoint3d& poi
 
 void CextDbTin::computeTiangles()
 {
+    m_area2d = 0.0;
+    m_area3d = 0.0;
     m_triangles.clear();
     CeCoords outCoords;
     m_zmin = std::numeric_limits<int64_t>::max();
