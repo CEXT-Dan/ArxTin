@@ -540,8 +540,7 @@ void CextDbTin::genMajorContours()
     CeContourLevels contourLevels;
     for (int64_t idx = int64_t(m_zmin); idx < int64_t(m_zmax); idx += m_majorZ)
         contourLevels.push_back(roundToNearest(idx, m_majorZ));
-    auto contours = generateContours(m_points, m_triangles, contourLevels);
-    m_majorContours = connectSegmentsIntoPolylines(contours);
+    m_majorContours = connectSegmentsIntoPolylines(generateContours(m_points, m_triangles, contourLevels));
 }
 
 void CextDbTin::genMinorContours()
@@ -552,8 +551,7 @@ void CextDbTin::genMinorContours()
     CeContourLevels contourLevels;
     for (int64_t idx = int64_t(m_zmin); idx < int64_t(m_zmax); idx += m_minorZ)
         contourLevels.push_back(roundToNearest(idx, m_minorZ));
-    auto contours = generateContours(m_points, m_triangles, contourLevels);
-    m_minorContours = connectSegmentsIntoPolylines(contours);
+    m_minorContours = connectSegmentsIntoPolylines(generateContours(m_points, m_triangles, contourLevels));
 }
 
 AcCmColor CextDbTin::pointColor() const
