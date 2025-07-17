@@ -116,10 +116,13 @@ public:
     AcCmColor   getMinorContourColor() const;
     void        setMinorContourColor(const AcCmColor& val);
 
-    double      getMajorZ() const;
+    double      majorZ() const;
     void        setMajorZ(double val);
-    double      getMinorZ() const;
+    double      minorZ() const;
     void        setMinorZ(double val);
+
+    CextDbTin::DrawFlags drawFlags() const;
+    void                 setDrawFlags(CextDbTin::DrawFlags val);
 
 protected:
     //filed

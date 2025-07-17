@@ -91,7 +91,25 @@ public:
         AcDbDatabase* pDb = acdbCurDwg();
         AcDbBlockTableRecordPointer model(acdbSymUtil()->blockModelSpaceId(pDb), AcDb::OpenMode::kForWrite);
         CextDbTinUPtr ptin(new CextDbTin(points));
-        ptin->recompute();
+
+        CextDbTin::DrawFlags flags = static_cast<CextDbTin::DrawFlags>(CextDbTin::kDrawTin | CextDbTin::kDrawContours);
+        ptin->setDrawFlags(flags);
+        ptin->setMinorZ(50);
+        ptin->setMajorZ(100);
+
+        AcCmColor tincolor;
+        tincolor.setColorIndex(139);
+        ptin->setTinColor(tincolor);
+
+        AcCmColor mincolor;
+        mincolor.setColorIndex(3);
+        ptin->setMinorContourColor(mincolor);
+
+        AcCmColor majcolor;
+        majcolor.setColorIndex(1);
+        ptin->setMajorContourColor(majcolor);
+
+
         model->appendAcDbEntity(ptin.get());
         timer.end(_T("Done: "));
     }
