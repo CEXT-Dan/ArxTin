@@ -37,7 +37,7 @@ ACRX_DXF_DEFINE_MEMBERS(
     CEXTDBTIN
     | Product Desc : A TIN for CAD
     | Company : CadExt
-    | WEB Address : www.cadext.com
+    | WEB Address : github.com/CEXT-Dan/ArxTin
 )
 
 //-----------------------------------------------------------------------------
