@@ -65,7 +65,7 @@
       <PreprocessorDefinitions>_WIN64;_WINDOWS;_BRXAPP;ARXTINUI_MODULE;_AFXEXT;_ACRXAPP;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalUsingDirectories>
       </AdditionalUsingDirectories>
-      <LanguageStandard>stdcpp20</LanguageStandard>
+      <LanguageStandard>stdcpp23</LanguageStandard>
       <AdditionalIncludeDirectories>$(BRX26)\inc;$(BRX26)\inc$(PlatformArchitecture);$(BRX26)\utils\brep\inc</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
@@ -100,7 +100,7 @@
       <PreprocessorDefinitions>_WIN64;_WINDOWS;_BRXAPP;ARXTINUI_MODULE;NDEBUG;_AFXEXT;_ACRXAPP;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalUsingDirectories>
       </AdditionalUsingDirectories>
-      <LanguageStandard>stdcpp20</LanguageStandard>
+      <LanguageStandard>stdcpp23</LanguageStandard>
       <AdditionalIncludeDirectories>$(BRX26)\inc;$(BRX26)\inc$(PlatformArchitecture);$(BRX26)\utils\brep\inc</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>

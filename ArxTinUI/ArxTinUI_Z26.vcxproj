@@ -65,7 +65,7 @@
       <PreprocessorDefinitions>_WIN64;_WINDOWS;_ZRXAPP;ARXTINUI_MODULE;_AFXEXT;_ACRXAPP;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalUsingDirectories>
       </AdditionalUsingDirectories>
-      <LanguageStandard>stdcpp20</LanguageStandard>
+      <LanguageStandard>stdcpp23</LanguageStandard>
       <AdditionalIncludeDirectories>$(ZRX2026)\arxport\inc;$(ZRX2026)\arxport\inc-x64;$(ZRX2026)\arxport\utils\brep\inc</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
@@ -100,7 +100,7 @@
       <PreprocessorDefinitions>_WIN64;_WINDOWS;_ZRXAPP;ARXTINUI_MODULE;NDEBUG;_AFXEXT;_ACRXAPP;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalUsingDirectories>
       </AdditionalUsingDirectories>
-      <LanguageStandard>stdcpp20</LanguageStandard>
+      <LanguageStandard>stdcpp23</LanguageStandard>
       <AdditionalIncludeDirectories>$(ZRX2026)\arxport\inc;$(ZRX2026)\arxport\inc-x64;$(ZRX2026)\arxport\utils\brep\inc</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>

@@ -65,7 +65,7 @@
       <PreprocessorDefinitions>_WIN64;_WINDOWS;_GRXAPP;ARXTINUI_MODULE;_AFXEXT;_ACRXAPP;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalUsingDirectories>
       </AdditionalUsingDirectories>
-      <LanguageStandard>stdcpp20</LanguageStandard>
+      <LanguageStandard>stdcpp23</LanguageStandard>
       <AdditionalIncludeDirectories>$(GRX26)\arx\inc;$(GRX26)\arx\inc-$(PlatformName);</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
@@ -100,7 +100,7 @@
       <PreprocessorDefinitions>_WIN64;_WINDOWS;_GRXAPP;ARXTINUI_MODULE;NDEBUG;_AFXEXT;_ACRXAPP;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalUsingDirectories>
       </AdditionalUsingDirectories>
-      <LanguageStandard>stdcpp20</LanguageStandard>
+      <LanguageStandard>stdcpp23</LanguageStandard>
       <AdditionalIncludeDirectories>$(GRX26)\arx\inc;$(GRX26)\arx\inc-$(PlatformName);</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
