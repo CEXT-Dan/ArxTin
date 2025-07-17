@@ -65,7 +65,8 @@ Acad::ErrorStatus CextDbTin::dwgOutFields(AcDbDwgFiler * pFiler) const
     m_majorContourColor.dwgOutAsTrueColor(pFiler);
     pFiler->writeDouble(m_minorZ);
     pFiler->writeDouble(m_majorZ);
-    pFiler->writeInt32(m_drawFlags);
+    pFiler->writeInt32(static_cast<Adesk::Int32>(m_drawFlags));
+    pFiler->writeInt32(static_cast<Adesk::Int32>(m_tinFlags));
 
 
     if (es = pFiler->writeInt64(Adesk::Int64(m_points.size())); es != eOk)
@@ -101,9 +102,15 @@ Acad::ErrorStatus CextDbTin::dwgInFields(AcDbDwgFiler * pFiler)
     pFiler->readDouble(&m_minorZ);
     pFiler->readDouble(&m_majorZ);
 
-    Adesk::Int32 tmpFlags = 0;
-    pFiler->readInt32(&tmpFlags);
-    m_drawFlags = static_cast<DrawFlags>(tmpFlags);
+    {//flags
+        Adesk::Int32 tmpFlags = 0;
+        pFiler->readInt32(&tmpFlags);
+        m_drawFlags = static_cast<DrawFlags>(tmpFlags);
+
+        tmpFlags = 0;
+        pFiler->readInt32(&tmpFlags);
+        m_tinFlags = static_cast<TinFlags>(tmpFlags);
+    }
 
     Adesk::Int64 npoints = 0;
     if (es = pFiler->readInt64(&npoints); es != eOk)
@@ -123,6 +130,7 @@ Acad::ErrorStatus CextDbTin::dwgInFields(AcDbDwgFiler * pFiler)
     return (pFiler->filerStatus());
 }
 
+#ifdef _NEVER //TODO
 Acad::ErrorStatus CextDbTin::dxfOutFields(AcDbDxfFiler * pFiler) const
 {
     assertReadEnabled();
@@ -197,6 +205,7 @@ Acad::ErrorStatus CextDbTin::dxfInFields(AcDbDxfFiler * pFiler) {
         return (Acad::eInvalidResBuf);
     return (pFiler->filerStatus());
 }
+#endif
 
 Acad::ErrorStatus CextDbTin::subOpen(AcDb::OpenMode mode)
 {
@@ -308,7 +317,7 @@ static bool isMultiple(double a, double b) {
 Adesk::Boolean CextDbTin::drawPoints(AcGiSubEntityTraits & traits, AcGiWorldGeometry & geo) const
 {
     traits.setTrueColor(m_pointColor.entityColor());
-    if (GETBIT(drawFlags(), kDrawPoints))
+    if (GETBIT(int(m_drawFlags), int(DrawFlags::kDrawPoints)))
     {
         geo.polypoint(m_points.size(), m_points.data());
     }
@@ -318,7 +327,7 @@ Adesk::Boolean CextDbTin::drawPoints(AcGiSubEntityTraits & traits, AcGiWorldGeom
 Adesk::Boolean CextDbTin::drawTriangles(AcGiSubEntityTraits & traits, AcGiWorldGeometry & geo) const
 {
     traits.setTrueColor(m_tinColor.entityColor());
-    if (GETBIT(drawFlags(), kDrawTin))
+    if (GETBIT(int(m_drawFlags), int(DrawFlags::kDrawTin)))
     {
         for (const auto& tri : m_triangles)
         {
@@ -330,7 +339,7 @@ Adesk::Boolean CextDbTin::drawTriangles(AcGiSubEntityTraits & traits, AcGiWorldG
 
 Adesk::Boolean CextDbTin::drawContours(AcGiSubEntityTraits & traits, AcGiWorldGeometry & geo) const
 {
-    if (GETBIT(drawFlags(), kDrawContours))
+    if (GETBIT(int(m_drawFlags), int(DrawFlags::kDrawContours)))
     {
         for (const auto& pline : m_plines)
         {

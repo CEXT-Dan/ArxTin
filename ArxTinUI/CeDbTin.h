@@ -56,13 +56,18 @@ public:
 protected:
     static Adesk::UInt32 kCurrentVersionNumber;
 public:
-    enum DrawFlags : int32_t
+    enum class DrawFlags : int32_t
     {
         kDrawPoints = 1 << 0,
         kDrawTin = 1 << 1,
         kDrawContours = 1 << 2,
-
     };
+
+    enum class TinFlags : int32_t
+    {
+        kNone =  0,
+    };
+
 public:
     CextDbTin();
     CextDbTin(const CePoints& points);
@@ -70,8 +75,11 @@ public:
 
     virtual Acad::ErrorStatus dwgOutFields(AcDbDwgFiler* pFiler) const override;
     virtual Acad::ErrorStatus dwgInFields(AcDbDwgFiler* pFiler) override;
+
+#ifdef _NEVER
     virtual Acad::ErrorStatus dxfOutFields(AcDbDxfFiler* pFiler) const override;
     virtual Acad::ErrorStatus dxfInFields(AcDbDxfFiler* pFiler) override;
+#endif
 
     virtual Acad::ErrorStatus subOpen(AcDb::OpenMode mode) override;
     virtual Acad::ErrorStatus subErase(Adesk::Boolean erasing) override;
@@ -133,7 +141,8 @@ protected:
     AcCmColor m_majorContourColor;
     double m_majorZ = 0.0;
     double m_minorZ = 0.0;
-    DrawFlags m_drawFlags = kDrawTin;
+    DrawFlags m_drawFlags = DrawFlags::kDrawTin;
+    TinFlags m_tinFlags = TinFlags::kNone;
 
     //not filed
     CePolylines m_plines;

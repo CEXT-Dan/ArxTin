@@ -92,7 +92,10 @@ public:
         AcDbBlockTableRecordPointer model(acdbSymUtil()->blockModelSpaceId(pDb), AcDb::OpenMode::kForWrite);
         CextDbTinUPtr ptin(new CextDbTin(points));
 
-        CextDbTin::DrawFlags flags = static_cast<CextDbTin::DrawFlags>(CextDbTin::kDrawTin | CextDbTin::kDrawContours);
+        CextDbTin::DrawFlags flags = static_cast<CextDbTin::DrawFlags>(
+            int32_t(CextDbTin::DrawFlags::kDrawTin) | 
+            int32_t(CextDbTin::DrawFlags::kDrawContours));
+
         ptin->setDrawFlags(flags);
         ptin->setMinorZ(50);
         ptin->setMajorZ(100);
