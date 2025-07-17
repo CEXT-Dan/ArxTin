@@ -311,45 +311,54 @@ Acad::ErrorStatus CextDbTin::subExplode(AcDbVoidPtrArray& entitySet) const
 {
     if (m_points.size())
     {
-        for (const auto& p : m_points)
+        if (GETBIT(int(m_drawFlags), int(DrawFlags::kDrawPoints)))
         {
-            AcDbPoint* point = new AcDbPoint(p);
-            point->setColor(m_pointColor);
-            point->setTransparency(m_pointTransparency);
-            entitySet.append(point);
-        }
-        for (const auto& tri : m_triangles)
-        {
-            AcDbFace* pFace = new AcDbFace(m_points[tri[0]], m_points[tri[1]], m_points[tri[2]]);
-            pFace->setColor(m_tinColor);
-            pFace->setTransparency(m_tinTransparency);
-            entitySet.append(pFace);
-        }
-        for (const auto& ctline : m_majorContours)
-        {
-            AcDbPolyline* pline = new AcDbPolyline(ctline.size());
-            for (UInt32 idx = 0; idx < ctline.size(); idx++)
+            for (const auto& p : m_points)
             {
-                if (idx == 0)
-                    pline->setElevation(ctline[idx].z);
-                pline->addVertexAt(idx, AcGePoint2d(ctline[idx].x, ctline[idx].y));
+                AcDbPoint* point = new AcDbPoint(p);
+                point->setColor(m_pointColor);
+                point->setTransparency(m_pointTransparency);
+                entitySet.append(point);
             }
-            pline->setColor(m_majorContourColor);
-            pline->setTransparency(m_majorTransparency);
-            entitySet.append(pline);
         }
-        for (const auto& ctline : m_minorContours)
+        if (GETBIT(int(m_drawFlags), int(DrawFlags::kDrawTin)))
         {
-            AcDbPolyline* pline = new AcDbPolyline(ctline.size());
-            for (UInt32 idx = 0; idx < ctline.size(); idx++)
+            for (const auto& tri : m_triangles)
             {
-                if (idx == 0)
-                    pline->setElevation(ctline[idx].z);
-                pline->addVertexAt(idx, AcGePoint2d(ctline[idx].x, ctline[idx].y));
+                AcDbFace* pFace = new AcDbFace(m_points[tri[0]], m_points[tri[1]], m_points[tri[2]]);
+                pFace->setColor(m_tinColor);
+                pFace->setTransparency(m_tinTransparency);
+                entitySet.append(pFace);
             }
-            pline->setColor(m_minorContourColor);
-            pline->setTransparency(m_minorTransparency);
-            entitySet.append(pline);
+        }
+        if (GETBIT(int(m_drawFlags), int(DrawFlags::kDrawContours)))
+        {
+            for (const auto& ctline : m_majorContours)
+            {
+                AcDbPolyline* pline = new AcDbPolyline(ctline.size());
+                for (UInt32 idx = 0; idx < ctline.size(); idx++)
+                {
+                    if (idx == 0)
+                        pline->setElevation(ctline[idx].z);
+                    pline->addVertexAt(idx, AcGePoint2d(ctline[idx].x, ctline[idx].y));
+                }
+                pline->setColor(m_majorContourColor);
+                pline->setTransparency(m_majorTransparency);
+                entitySet.append(pline);
+            }
+            for (const auto& ctline : m_minorContours)
+            {
+                AcDbPolyline* pline = new AcDbPolyline(ctline.size());
+                for (UInt32 idx = 0; idx < ctline.size(); idx++)
+                {
+                    if (idx == 0)
+                        pline->setElevation(ctline[idx].z);
+                    pline->addVertexAt(idx, AcGePoint2d(ctline[idx].x, ctline[idx].y));
+                }
+                pline->setColor(m_minorContourColor);
+                pline->setTransparency(m_minorTransparency);
+                entitySet.append(pline);
+            }
         }
         return eOk;
     }
