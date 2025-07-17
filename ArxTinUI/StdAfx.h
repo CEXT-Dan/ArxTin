@@ -266,7 +266,6 @@ public:
 using kd_tree3d_t = nanoflann::KDTreeSingleIndexAdaptor<
     nanoflann::L2_Simple_Adaptor<double, KdAcGePointAdapter>, KdAcGePointAdapter, 2>;
 
-
 bool inline isZero(double val)
 {
     constexpr double EPSILON = 1e-11;
@@ -274,7 +273,6 @@ bool inline isZero(double val)
         return true;
     return false;
 }
-
 
 class PerfTimer
 {

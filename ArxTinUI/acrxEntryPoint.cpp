@@ -98,7 +98,6 @@ public:
             int32_t(CextDbTin::DrawFlags::kDrawContours));
         ptin->setDrawFlags(flags);
 
-       
         AcCmColor tincolor;
         tincolor.setColorIndex(139);
         ptin->setTinColor(tincolor);

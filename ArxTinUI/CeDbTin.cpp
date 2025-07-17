@@ -34,10 +34,7 @@ ACRX_DXF_DEFINE_MEMBERS(
     CextDbTin, AcDbEntity,
     AcDb::kDHL_CURRENT, AcDb::kMReleaseCurrent,
     CExtProxyFlags, CEXTDBTIN,
-    CEXTDBTIN
-    | Product Desc : A TIN for CAD
-    | Company : CadExt
-    | WEB Address : github.com/CEXT-Dan/ArxTin
+    "CEXTDBTIN|Product Desc: A TIN for CAD|Company: CadExt|WEB Address: github.com/CEXT-Dan/ArxTin"
 )
 
 //-----------------------------------------------------------------------------
@@ -45,12 +42,12 @@ CextDbTin::CextDbTin() : AcDbEntity()
 {
 }
 
-CextDbTin::CextDbTin(const CePoints & points)
+CextDbTin::CextDbTin(const CePoints& points)
     : AcDbEntity(), m_points(points)
 {
 }
 
-Acad::ErrorStatus CextDbTin::dwgOutFields(AcDbDwgFiler * pFiler) const
+Acad::ErrorStatus CextDbTin::dwgOutFields(AcDbDwgFiler* pFiler) const
 {
     assertReadEnabled();
     Acad::ErrorStatus es = AcDbEntity::dwgOutFields(pFiler);
@@ -79,7 +76,7 @@ Acad::ErrorStatus CextDbTin::dwgOutFields(AcDbDwgFiler * pFiler) const
     return (pFiler->filerStatus());
 }
 
-Acad::ErrorStatus CextDbTin::dwgInFields(AcDbDwgFiler * pFiler)
+Acad::ErrorStatus CextDbTin::dwgInFields(AcDbDwgFiler* pFiler)
 {
     assertWriteEnabled();
     Acad::ErrorStatus es = AcDbEntity::dwgInFields(pFiler);
@@ -131,7 +128,7 @@ Acad::ErrorStatus CextDbTin::dwgInFields(AcDbDwgFiler * pFiler)
 }
 
 #ifdef _NEVER //TODO
-Acad::ErrorStatus CextDbTin::dxfOutFields(AcDbDxfFiler * pFiler) const
+Acad::ErrorStatus CextDbTin::dxfOutFields(AcDbDxfFiler* pFiler) const
 {
     assertReadEnabled();
     Acad::ErrorStatus es = AcDbEntity::dxfOutFields(pFiler);
@@ -152,7 +149,7 @@ Acad::ErrorStatus CextDbTin::dxfOutFields(AcDbDxfFiler * pFiler) const
     return (pFiler->filerStatus());
 }
 
-Acad::ErrorStatus CextDbTin::dxfInFields(AcDbDxfFiler * pFiler) {
+Acad::ErrorStatus CextDbTin::dxfInFields(AcDbDxfFiler* pFiler) {
     assertWriteEnabled();
 
     Acad::ErrorStatus es = AcDbEntity::dxfInFields(pFiler);
@@ -237,7 +234,7 @@ void CextDbTin::subList() const
     acutPrintf(_T("\nMin = %f, max = %f"), m_zmin, m_zmax);
 }
 
-Adesk::Boolean CextDbTin::subWorldDraw(AcGiWorldDraw * mode)
+Adesk::Boolean CextDbTin::subWorldDraw(AcGiWorldDraw* mode)
 {
     assertReadEnabled();
     auto& rTraits = mode->subEntityTraits();
@@ -254,7 +251,7 @@ Adesk::Boolean CextDbTin::subWorldDraw(AcGiWorldDraw * mode)
     return true;
 }
 
-Adesk::UInt32 CextDbTin::subSetAttributes(AcGiDrawableTraits * traits) {
+Adesk::UInt32 CextDbTin::subSetAttributes(AcGiDrawableTraits* traits) {
     assertReadEnabled();
     return (AcDbEntity::subSetAttributes(traits));
 }
@@ -262,12 +259,12 @@ Adesk::UInt32 CextDbTin::subSetAttributes(AcGiDrawableTraits * traits) {
 Acad::ErrorStatus CextDbTin::subGetOsnapPoints(
     AcDb::OsnapMode osnapMode,
     Adesk::GsMarker gsSelectionMark,
-    const AcGePoint3d & pickPoint,
-    const AcGePoint3d & lastPoint,
-    const AcGeMatrix3d & viewXform,
-    AcGePoint3dArray & snapPoints,
-    AcDbIntArray & geomIds,
-    const AcGeMatrix3d & insertionMat) const
+    const AcGePoint3d& pickPoint,
+    const AcGePoint3d& lastPoint,
+    const AcGeMatrix3d& viewXform,
+    AcGePoint3dArray& snapPoints,
+    AcDbIntArray& geomIds,
+    const AcGeMatrix3d& insertionMat) const
 {
     assertReadEnabled();
     if (osnapMode != AcDb::kOsModeEnd)
@@ -277,7 +274,7 @@ Acad::ErrorStatus CextDbTin::subGetOsnapPoints(
     return eOk;
 }
 
-Acad::ErrorStatus CextDbTin::subTransformBy(const AcGeMatrix3d & xform)
+Acad::ErrorStatus CextDbTin::subTransformBy(const AcGeMatrix3d& xform)
 {
     assertWriteEnabled();
     std::for_each(std::execution::par, m_points.begin(), m_points.end(), [&](AcGePoint3d& p) { p.transformBy(xform); });
@@ -291,7 +288,7 @@ Adesk::Boolean CextDbTin::subCloneMeForDragging()
 
 //-----------------------------------------------------------------------------
 //----- Not Autodesk
-void CextDbTin::setPoints(const CePoints & points)
+void CextDbTin::setPoints(const CePoints& points)
 {
     assertWriteEnabled();
     m_points = points;
@@ -325,7 +322,7 @@ static bool isMultiple(double a, double b)
     return (int64_t(a) % int64_t(b) == 0);
 }
 
-Adesk::Boolean CextDbTin::drawPoints(AcGiSubEntityTraits & traits, AcGiWorldGeometry & geo) const
+Adesk::Boolean CextDbTin::drawPoints(AcGiSubEntityTraits& traits, AcGiWorldGeometry& geo) const
 {
     traits.setTrueColor(m_pointColor.entityColor());
     if (GETBIT(int(m_drawFlags), int(DrawFlags::kDrawPoints)))
@@ -335,7 +332,7 @@ Adesk::Boolean CextDbTin::drawPoints(AcGiSubEntityTraits & traits, AcGiWorldGeom
     return Adesk::kTrue;
 }
 
-Adesk::Boolean CextDbTin::drawTriangles(AcGiSubEntityTraits & traits, AcGiWorldGeometry & geo) const
+Adesk::Boolean CextDbTin::drawTriangles(AcGiSubEntityTraits& traits, AcGiWorldGeometry& geo) const
 {
     traits.setTrueColor(m_tinColor.entityColor());
     if (GETBIT(int(m_drawFlags), int(DrawFlags::kDrawTin)))
@@ -352,7 +349,7 @@ Adesk::Boolean CextDbTin::drawTriangles(AcGiSubEntityTraits & traits, AcGiWorldG
     return Adesk::kTrue;
 }
 
-Adesk::Boolean CextDbTin::drawContours(AcGiSubEntityTraits & traits, AcGiWorldGeometry & geo) const
+Adesk::Boolean CextDbTin::drawContours(AcGiSubEntityTraits& traits, AcGiWorldGeometry& geo) const
 {
     if (GETBIT(int(m_drawFlags), int(DrawFlags::kDrawContours)))
     {
@@ -378,7 +375,7 @@ Adesk::Boolean CextDbTin::drawContours(AcGiSubEntityTraits & traits, AcGiWorldGe
     return Adesk::kTrue;
 }
 
-static auto connectSegmentsIntoPolylines(const CeSegments & segments) -> CePolylines
+static auto connectSegmentsIntoPolylines(const CeSegments& segments) -> CePolylines
 {
     // Map from point to all segments starting or ending at that point
     std::unordered_multimap<AcGePoint3d, const CeSegment*, Point3DHash> pointToSegs;
@@ -465,7 +462,7 @@ static auto connectSegmentsIntoPolylines(const CeSegments & segments) -> CePolyl
     return polylines;
 }
 
-static auto interpolate(const AcGePoint3d & a, const AcGePoint3d & b, double contourLevel) -> AcGePoint3d
+static auto interpolate(const AcGePoint3d& a, const AcGePoint3d& b, double contourLevel) -> AcGePoint3d
 {
     const double t = (contourLevel - a.z) / (b.z - a.z);
     return
@@ -476,7 +473,7 @@ static auto interpolate(const AcGePoint3d & a, const AcGePoint3d & b, double con
     };
 }
 
-static void processTriangle(const CePoints &points, const CeTriangle & tri, double contourLevel, CeSegments & segments)
+static void processTriangle(const CePoints& points, const CeTriangle& tri, double contourLevel, CeSegments& segments)
 {
     CePoints crossings;
     for (int i = 0; i < 3; ++i)
@@ -493,13 +490,13 @@ static void processTriangle(const CePoints &points, const CeTriangle & tri, doub
         segments.emplace_back(crossings[0], crossings[1]);
 }
 
-static auto generateContours(const CePoints& points,const CeTriangles& triangles, const CeContourLevels& contourLevels) -> CeSegments
+static auto generateContours(const CePoints& points, const CeTriangles& triangles, const CeContourLevels& contourLevels) -> CeSegments
 {
     CeSegments segments;
     for (const auto& tri : triangles)
     {
         for (double level : contourLevels)
-            processTriangle(points,tri, level, segments);
+            processTriangle(points, tri, level, segments);
     }
     return segments;
 }

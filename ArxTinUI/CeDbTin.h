@@ -65,7 +65,7 @@ public:
 
     enum class TinFlags : int32_t
     {
-        kNone =  0,
+        kNone = 0,
     };
 
 public:
