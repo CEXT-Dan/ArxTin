@@ -303,6 +303,55 @@ Adesk::Boolean CextDbTin::subCloneMeForDragging()
     return false; //TODO test
 }
 
+Acad::ErrorStatus CextDbTin::subExplode(AcDbVoidPtrArray& entitySet) const
+{
+    if (m_points.size())
+    {
+        for (const auto& p : m_points)
+        {
+            AcDbPoint* point = new AcDbPoint(p);
+            point->setColor(m_pointColor);
+            point->setTransparency(m_pointTransparency);
+            entitySet.append(point);
+        }
+        for (const auto& tri : m_triangles)
+        {
+            AcDbFace* pFace = new AcDbFace(m_points[tri[0]], m_points[tri[1]], m_points[tri[2]]);
+            pFace->setColor(m_tinColor);
+            pFace->setTransparency(m_tinTransparency);
+            entitySet.append(pFace);
+        }
+        for (const auto& ctline : m_majorContours)
+        {
+            AcDbPolyline* pline = new AcDbPolyline(ctline.size());
+            for (UInt32 idx = 0 ; idx < ctline.size(); idx++)
+            {
+                if (idx == 0)
+                    pline->setElevation(ctline[idx].z);
+                pline->addVertexAt(idx, AcGePoint2d(ctline[idx].x, ctline[idx].y));
+            }
+            pline->setColor(m_majorContourColor);
+            pline->setTransparency(m_majorTransparency);
+            entitySet.append(pline);
+        }
+        for (const auto& ctline : m_minorContours)
+        {
+            AcDbPolyline* pline = new AcDbPolyline(ctline.size());
+            for (UInt32 idx = 0; idx < ctline.size(); idx++)
+            {
+                if (idx == 0)
+                    pline->setElevation(ctline[idx].z);
+                pline->addVertexAt(idx, AcGePoint2d(ctline[idx].x, ctline[idx].y));
+            }
+            pline->setColor(m_minorContourColor);
+            pline->setTransparency(m_minorTransparency);
+            entitySet.append(pline);
+        }
+        return eOk;
+    }
+    return eNotApplicable;
+}
+
 //-----------------------------------------------------------------------------
 //----- Not Autodesk
 void CextDbTin::setPoints(const CePoints& points)
@@ -545,8 +594,7 @@ void CextDbTin::computeTiangles()
 
     for (size_t i = 0; i < d.triangles.size(); i += 3)
     {
-        CeTriangle tri{ d.triangles[i + 0] ,d.triangles[i + 1] , d.triangles[i + 2] };
-        m_triangles.push_back(tri);
+        m_triangles.emplace_back(CeTriangle{ d.triangles[i + 0] ,d.triangles[i + 1] , d.triangles[i + 2] });
     }
 }
 
@@ -557,7 +605,12 @@ void CextDbTin::genMajorContours()
         return;
     CeContourLevels contourLevels;
     for (int64_t idx = int64_t(m_zmin); idx < int64_t(m_zmax); idx += m_majorZ)
-        contourLevels.push_back(roundToNearest(idx, m_majorZ));
+    {
+        auto nearest = roundToNearest(idx, m_majorZ);
+        contourLevels.push_back(nearest);
+        m_contourSet.insert(nearest);
+    }
+
     m_majorContours = connectSegmentsIntoPolylines(generateContours(m_points, m_triangles, contourLevels));
 }
 
@@ -568,7 +621,11 @@ void CextDbTin::genMinorContours()
         return;
     CeContourLevels contourLevels;
     for (int64_t idx = int64_t(m_zmin); idx < int64_t(m_zmax); idx += m_minorZ)
-        contourLevels.push_back(roundToNearest(idx, m_minorZ));
+    {
+        auto nearest = roundToNearest(idx, m_minorZ);
+        if (!m_contourSet.contains(nearest))
+            contourLevels.push_back(nearest);
+    }
     m_minorContours = connectSegmentsIntoPolylines(generateContours(m_points, m_triangles, contourLevels));
 }
 
@@ -698,6 +755,6 @@ void CextDbTin::createTree()
     nanoflann::KDTreeSingleIndexAdaptorParams params;
     params.leaf_max_size = 16;
     params.n_thread_build = 0;
-    m_pTree.reset(new kd_tree3d_t(3, m_adapter, params));
+    m_pTree.reset(new kd_tree3d_t(2, m_adapter, params));
     m_pTree->buildIndex();
 }

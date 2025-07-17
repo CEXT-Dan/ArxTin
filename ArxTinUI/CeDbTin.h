@@ -105,6 +105,8 @@ public:
 
     virtual Acad::ErrorStatus subTransformBy(const AcGeMatrix3d& xform) override;
     virtual Adesk::Boolean    subCloneMeForDragging() override;
+    virtual Acad::ErrorStatus subExplode(AcDbVoidPtrArray& entitySet) const override;
+
 
 public:
     Adesk::Boolean drawPoints(AcGiSubEntityTraits& traits, AcGiWorldGeometry& geo) const;
@@ -170,6 +172,8 @@ protected:
     std::shared_ptr<kd_tree3d_t> m_pTree;
     double m_zmin = std::numeric_limits<int64_t>::max();
     double m_zmax = std::numeric_limits<int64_t>::min();
+
+    std::unordered_set<double> m_contourSet;
 
     bool m_dirty = false;
 };

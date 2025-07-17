@@ -101,6 +101,8 @@ public:
         AcCmColor tincolor;
         tincolor.setColorIndex(139);
         ptin->setTinColor(tincolor);
+        AcCmTransparency tinTr{ 1.0 - (50 * 0.01) };
+        ptin->setTinTransparency(tinTr);
 
         //contours
         ptin->setMinorZ(20);
@@ -109,6 +111,8 @@ public:
         AcCmColor mincolor;
         mincolor.setColorIndex(3);
         ptin->setMinorContourColor(mincolor);
+        AcCmTransparency minorTr{ 1.0 - (50 * 0.01) };
+        ptin->setMinorTransparency(minorTr);
 
         AcCmColor majcolor;
         majcolor.setColorIndex(1);
