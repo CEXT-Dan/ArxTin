@@ -113,7 +113,8 @@ public:
     void        recompute();
     void        createTree();
     void        computeTiangles();
-    void        genCountours();
+    void        genMajorContours();
+    void        genMinorContours();
 
     AcCmColor   pointColor() const;
     void        setpointColor(const AcCmColor& val);
@@ -145,7 +146,8 @@ protected:
     TinFlags m_tinFlags = TinFlags::kNone;
 
     //not filed
-    CePolylines m_plines;
+    CePolylines m_majorContours;
+    CePolylines m_minorContours;
     CeTriangles m_triangles;
     KdAcGePointAdapter m_adapter{ m_points };
     std::shared_ptr<kd_tree3d_t> m_pTree;

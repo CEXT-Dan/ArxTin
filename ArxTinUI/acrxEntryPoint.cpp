@@ -97,7 +97,7 @@ public:
             int32_t(CextDbTin::DrawFlags::kDrawContours));
 
         ptin->setDrawFlags(flags);
-        ptin->setMinorZ(50);
+        ptin->setMinorZ(20);
         ptin->setMajorZ(100);
 
         AcCmColor tincolor;

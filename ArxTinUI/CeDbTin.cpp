@@ -236,7 +236,8 @@ Adesk::Boolean CextDbTin::subWorldDraw(AcGiWorldDraw * mode)
     auto& rGeo = mode->geometry();
 
     computeTiangles();
-    genCountours();
+    genMajorContours();
+    genMinorContours();
 
     drawPoints(rTraits, rGeo);
     drawTriangles(rTraits, rGeo);
@@ -295,7 +296,8 @@ void CextDbTin::recompute()
     if (m_dirty)
     {
         computeTiangles();
-        genCountours();
+        genMajorContours();
+        genMinorContours();
         createTree();
         m_dirty = false;
     }
@@ -308,8 +310,9 @@ static double roundToNearest(double value, double multiple)
     return std::round((value + adj) / multiple) * multiple;
 }
 
-static bool isMultiple(double a, double b) {
-    if (b == 0)
+static bool isMultiple(double a, double b)
+{
+    if (isZero(b))
         return false;
     return (int64_t(a) % int64_t(b) == 0);
 }
@@ -341,13 +344,20 @@ Adesk::Boolean CextDbTin::drawContours(AcGiSubEntityTraits & traits, AcGiWorldGe
 {
     if (GETBIT(int(m_drawFlags), int(DrawFlags::kDrawContours)))
     {
-        for (const auto& pline : m_plines)
+        for (const auto& pline : m_minorContours)
         {
             if (pline.size())
             {
-                if (isMultiple(pline[0].z, 50))
+                if (isMultiple(pline[0].z, m_minorZ))
                     traits.setTrueColor(m_minorContourColor.entityColor());
-                if (isMultiple(pline[0].z, 100))
+                geo.polyline(pline.size(), pline.data());
+            }
+        }
+        for (const auto& pline : m_majorContours)
+        {
+            if (pline.size())
+            {
+                if (isMultiple(pline[0].z, m_majorZ))
                     traits.setTrueColor(m_majorContourColor.entityColor());
                 geo.polyline(pline.size(), pline.data());
             }
@@ -516,16 +526,28 @@ void CextDbTin::computeTiangles()
     }
 }
 
-void CextDbTin::genCountours()
+void CextDbTin::genMajorContours()
 {
-    m_plines.clear();
+    m_majorContours.clear();
+    if (isZero(m_majorZ))
+        return;
     CeContourLevels contourLevels;
-    for (int64_t idx = int64_t(m_zmin); idx < int64_t(m_zmax); idx += 50)
-    {
-        contourLevels.push_back(roundToNearest(idx, 50));
-    }
+    for (int64_t idx = int64_t(m_zmin); idx < int64_t(m_zmax); idx += m_majorZ)
+        contourLevels.push_back(roundToNearest(idx, m_majorZ));
     auto contours = generateContours(m_triangles, contourLevels);
-    m_plines = connectSegmentsIntoPolylines(contours);
+    m_majorContours = connectSegmentsIntoPolylines(contours);
+}
+
+void CextDbTin::genMinorContours()
+{
+    m_minorContours.clear();
+    if (isZero(m_minorZ))
+        return;
+    CeContourLevels contourLevels;
+    for (int64_t idx = int64_t(m_zmin); idx < int64_t(m_zmax); idx += m_minorZ)
+        contourLevels.push_back(roundToNearest(idx, m_minorZ));
+    auto contours = generateContours(m_triangles, contourLevels);
+    m_minorContours = connectSegmentsIntoPolylines(contours);
 }
 
 AcCmColor CextDbTin::pointColor() const

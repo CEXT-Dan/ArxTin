@@ -267,6 +267,15 @@ using kd_tree3d_t = nanoflann::KDTreeSingleIndexAdaptor<
     nanoflann::L2_Simple_Adaptor<double, KdAcGePointAdapter>, KdAcGePointAdapter, 2>;
 
 
+bool inline isZero(double val)
+{
+    constexpr double EPSILON = 1e-11;
+    if (std::fabs(val) < EPSILON)
+        return true;
+    return false;
+}
+
+
 class PerfTimer
 {
     std::wstring m_funcName;
