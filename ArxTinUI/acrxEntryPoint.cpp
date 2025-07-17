@@ -122,13 +122,12 @@ public:
 
         model->appendAcDbEntity(ptin.get());
 
-        ptin->recompute();
+        //we need to compute if we need the area
+        ptin->recompute(true);
 
         timer.end(_T("Done: "));
 
         acutPrintf(_T("\narea2 = %lf, area3 = %lf"), ptin->area2d(), ptin->area3d());
-
-    
     }
 };
 

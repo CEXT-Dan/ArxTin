@@ -114,7 +114,7 @@ public:
     Adesk::Boolean drawContours(AcGiSubEntityTraits& traits, AcGiWorldGeometry& geo) const;
 
     void        setPoints(const CePoints& points);
-    void        recompute();
+    void        recompute(bool force = false);
     void        createTree();
     void        computeTiangles();
     void        genMajorContours();
@@ -179,7 +179,7 @@ protected:
     double m_area2d = 0.0;
     double m_area3d = 0.0;
 
-    bool m_dirty = true;
+    bool m_dirty = false;
 };
 
 #ifdef ARXTINUI_MODULE

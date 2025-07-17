@@ -362,9 +362,10 @@ void CextDbTin::setPoints(const CePoints& points)
     recompute();
 }
 
-void CextDbTin::recompute()
+
+void CextDbTin::recompute(bool force /*= false*/)
 {
-    if (m_dirty)
+    if (m_dirty || force)
     {
         computeTiangles();
         genMajorContours();
@@ -583,27 +584,22 @@ static void getCoords(const CePoints& points, CeCoords& outCoords, double& zmin,
     }
 }
 
-static double area3dOfTriangle(const AcGePoint3d& point1, const AcGePoint3d& point2, const AcGePoint3d& point3)
+static double areaOfTriangle(const AcGePoint3d& point1, const AcGePoint3d& point2, const AcGePoint3d& point3)
 {
-    AcGeVector3d vector1 = AcGeVector3d(point2 - point1);
-    AcGeVector3d vector2 = AcGeVector3d(point3 - point1);
-    AcGeVector3d crossProduct = vector1.crossProduct(vector2);
-    double magnitude = crossProduct.length();
-    return 0.5 * magnitude;;
+    const AcGeVector3d& vector1 = point2 - point1;
+    const AcGeVector3d& vector2 = point3 - point1;
+    return 0.5 * vector1.crossProduct(vector2).length();
 }
 
 static double area2dOfTriangle(const AcGePoint3d& point1, const AcGePoint3d& point2, const AcGePoint3d& point3)
 {
-    static AcGePoint3d _point1;
-    static AcGePoint3d _point2;
-    static AcGePoint3d _point3;
-    _point1 = point1;
-    _point2 = point2;
-    _point3 = point3;
+    AcGePoint3d _point1 = point1;
+    AcGePoint3d _point2 = point2;
+    AcGePoint3d _point3 = point3;
     _point1.z = 0.0;
     _point2.z = 0.0;
     _point3.z = 0.0;
-    return area3dOfTriangle(_point1, _point2, _point3);
+    return areaOfTriangle(_point1, _point2, _point3);
 }
 
 void CextDbTin::computeTiangles()
@@ -621,7 +617,7 @@ void CextDbTin::computeTiangles()
         const auto b = d.triangles[i + 1];
         const auto c = d.triangles[i + 2];
         m_triangles.emplace_back(CeTriangle{ a, b, c });
-        m_area3d += area3dOfTriangle(m_points[a], m_points[b], m_points[c]);
+        m_area3d += areaOfTriangle(m_points[a], m_points[b], m_points[c]);
         m_area2d += area2dOfTriangle(m_points[a], m_points[b], m_points[c]);
     }
 }
