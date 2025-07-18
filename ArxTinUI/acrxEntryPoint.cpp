@@ -86,7 +86,22 @@ public:
             acutPrintf(_T("\nOOF"));
             return;
         }
-        
+
+        double maxz = 1;
+        if (auto res = acedGetReal(_T("\nEnter a major contour interval: "), &maxz); res != RTNORM || isZero(maxz))
+        {
+            acutPrintf(_T("\nOOF"));
+            return;
+        }
+
+
+        double minz = 1;
+        if (auto res = acedGetReal(_T("\nEnter a minor contour interval: "), &minz); res != RTNORM || isZero(minz))
+        {
+            acutPrintf(_T("\nOOF"));
+            return;
+        }
+
         auto points = getGePoints(ids);
         AcDbDatabase* pDb = acdbCurDwg();
         AcDbBlockTableRecordPointer model(acdbSymUtil()->blockModelSpaceId(pDb), AcDb::OpenMode::kForWrite);
@@ -99,9 +114,6 @@ public:
             int32_t(CextDbTin::DrawFlags::kDrawTin) |
             int32_t(CextDbTin::DrawFlags::kDrawContours));
 
-        //CextDbTin::DrawFlags flags = static_cast<CextDbTin::DrawFlags>(
-            //int32_t(CextDbTin::DrawFlags::kDrawContours));
-
         ptin->setDrawFlags(flags);
 
         AcCmColor tincolor;
@@ -111,8 +123,8 @@ public:
         ptin->setTinTransparency(tinTr);
 
         //contours
-        ptin->setMinorZ(20);
-        ptin->setMajorZ(100);
+        ptin->setMinorZ(minz);
+        ptin->setMajorZ(maxz);
 
         AcCmColor mincolor;
         mincolor.setColorIndex(3);
@@ -125,13 +137,7 @@ public:
         ptin->setMajorContourColor(majcolor);
 
         model->appendAcDbEntity(ptin.get());
-
-        //we need to compute if we need the area
-        ptin->recompute(true);
-
-        timer.end(_T("Done: "));
-
-        acutPrintf(_T("\narea2 = %lf, area3 = %lf"), ptin->area2d(), ptin->area3d());
+        timer.end(_T("Done "));
     }
 };
 
