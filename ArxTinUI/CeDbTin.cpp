@@ -25,6 +25,7 @@
 #include "StdAfx.h"
 #include "CeDbTin.h"
 #include "delaunator-header-only.hpp"
+#include <ppl.h>
 
 //-----------------------------------------------------------------------------
 Adesk::UInt32 CextDbTin::kCurrentVersionNumber = 1;
@@ -811,8 +812,30 @@ static bool isPointInTriangle(const AcGePoint3d& p, const AcGePoint3d& t1, const
     return std::abs(totalArea - (area1 + area2 + area3)) < 1e-9;
 }
 
-CeTriangle CextDbTin::getTrangleFromPoint(const AcGePoint3d& source)
+CeTriangle CextDbTin::getTrangleFromPoint(const AcGePoint3d& source) const
 {
+    std::atomic<size_t> found = std::wstring::npos;
+	concurrency::cancellation_token_source cts;
+	concurrency::run_with_cancellation_token([&]()
+		{
+			concurrency::parallel_for(size_t(0), m_triangles.size(), [&](size_t idx)
+				{
+					const auto& tri = m_triangles[idx];
+					const AcGePoint3d& t1 = m_points[tri[0]];
+					const AcGePoint3d& t2 = m_points[tri[1]];
+					const AcGePoint3d& t3 = m_points[tri[2]];
+					if (isPointInTriangle(source, t1, t2, t3))
+					{
+						found = idx;
+						cts.cancel();
+					}
+				});
+		}, cts.get_token());
+	if (found != std::wstring::npos)
+		return m_triangles[found];
+	return invalidTiangle;
+
+#ifdef _NEVER
     for (const auto& tri : m_triangles)
     {
         const AcGePoint3d& t1 = m_points[tri[0]];
@@ -822,11 +845,12 @@ CeTriangle CextDbTin::getTrangleFromPoint(const AcGePoint3d& source)
             return tri;
     }
     return invalidTiangle;
+#endif
 }
 
-Acad::ErrorStatus CextDbTin::getElevationFromPoint(const AcGePoint3d& sourceWCS,double &elev)
+Acad::ErrorStatus CextDbTin::getElevationFromPoint(const AcGePoint3d& sourceWCS, double& elev) const
 {
-    CeTriangle tri = getTrangleFromPoint(sourceWCS);
+    const CeTriangle& tri = getTrangleFromPoint(sourceWCS);
     if (tri != invalidTiangle)
     {
         const AcGePoint3d& t1 = m_points[tri[0]];

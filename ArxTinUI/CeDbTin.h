@@ -148,8 +148,8 @@ public:
     CextDbTin::DrawFlags drawFlags() const;
     void                 setDrawFlags(CextDbTin::DrawFlags val);
 
-    CeTriangle        getTrangleFromPoint(const AcGePoint3d& sourceWCS);
-    Acad::ErrorStatus getElevationFromPoint(const AcGePoint3d& sourceWCS, double& elev);
+    CeTriangle        getTrangleFromPoint(const AcGePoint3d& sourceWCS) const;
+    Acad::ErrorStatus getElevationFromPoint(const AcGePoint3d& sourceWCS, double& elev) const;
 
 
 public:

@@ -114,7 +114,7 @@ public:
             if (auto res = acedGetReal(_T("\nEnter a minor contour interval (Enter 0 for none): "), &minz); res != RTNORM || isZero(minz))
                 minz = maxz;
         }
-   
+
         int drawtin = 0;
         if (auto res = acedGetInt(_T("\nDraw triangles (1 = Y, 0 = N) <0> : "), &drawtin); res == RTNORM && drawtin != 0)
             drawFlags |= int32_t(CextDbTin::DrawFlags::kDrawTin);
