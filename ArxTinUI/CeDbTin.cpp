@@ -574,7 +574,7 @@ static auto interpolate(const AcGePoint3d& a, const AcGePoint3d& b, double conto
     };
 }
 
-static void processTriangle(const CePoints& points, const CeTriangle& tri, double contourLevel, CeSegments& segments)
+static void processTriangle(const CePoints& points, const CeTriangle& tri, double contourLevel, CeSegmentsMap& map)
 {
     CePoints crossings;
     for (int i = 0; i < 3; ++i)
@@ -588,18 +588,17 @@ static void processTriangle(const CePoints& points, const CeTriangle& tri, doubl
         }
     }
     if (crossings.size() == 2)
-        segments.emplace_back(crossings[0], crossings[1]);
+        map[crossings[0].z].push_back({ crossings[0], crossings[1] });
 }
 
-static auto generateContours(const CePoints& points, const CeTriangles& triangles, const CeContourLevels& contourLevels) -> CeSegments
+static void generateContours(const CePoints& points, const CeTriangles& triangles, const CeContourLevels& contourLevels, CeSegmentsMap& map)
 {
     CeSegments segments;
     for (const auto& tri : triangles)
     {
         for (double level : contourLevels)
-            processTriangle(points, tri, level, segments);
+            processTriangle(points, tri, level, map);
     }
-    return segments;
 }
 
 static void getCoords(const CePoints& points, CeCoords& outCoords, double& zmin, double& zmax)
@@ -667,7 +666,15 @@ void CextDbTin::genMajorContours()
         m_contourSet.insert(nearest);
     }
     m_minorContours.reserve(contourLevels.size());
-    connectSegmentsIntoPolylines(generateContours(m_points, m_triangles, contourLevels), m_majorContours);
+
+    CeSegmentsMap map;
+    map.reserve(contourLevels.size());
+    generateContours(m_points, m_triangles, contourLevels, map);
+    std::for_each(std::execution::par_unseq,map.begin(), map.end(), [&](const auto& kv)
+        {
+            std::lock_guard<std::mutex> lock(m_mtx_);
+            connectSegmentsIntoPolylines(kv.second, m_majorContours);
+        });
 }
 
 void CextDbTin::genMinorContours()
@@ -682,8 +689,15 @@ void CextDbTin::genMinorContours()
         if (!m_contourSet.contains(nearest))
             contourLevels.push_back(nearest);
     }
-    m_minorContours.reserve(contourLevels.size());
-    connectSegmentsIntoPolylines(generateContours(m_points, m_triangles, contourLevels), m_minorContours);
+
+    CeSegmentsMap map;
+    map.reserve(contourLevels.size());
+    generateContours(m_points, m_triangles, contourLevels, map);
+    std::for_each(std::execution::par_unseq,map.begin(), map.end(), [&](const auto& kv)
+        {
+            std::lock_guard<std::mutex> lock(m_mtx_);
+            connectSegmentsIntoPolylines(kv.second, m_minorContours);
+        });
 }
 
 AcCmColor CextDbTin::pointColor() const

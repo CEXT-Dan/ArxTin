@@ -170,6 +170,8 @@ using CeContourLevels = std::vector<double>;
 using CeCoords = std::vector<double>;
 using CePolyline = std::vector<AcGePoint3d>;
 using CePolylines = std::vector<CePolyline>;
+using CeSegmentsMap = std::unordered_map<double, std::vector<CeSegment>>;
+
 
 template<std::size_t Bits> struct hash_mix_impl;
 

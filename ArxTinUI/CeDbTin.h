@@ -167,6 +167,7 @@ protected:
     TinFlags m_tinFlags = TinFlags::kNone;
 
     //not filed
+    std::mutex m_mtx_;
     CePolylines m_majorContours;
     CePolylines m_minorContours;
     CeTriangles m_triangles;
