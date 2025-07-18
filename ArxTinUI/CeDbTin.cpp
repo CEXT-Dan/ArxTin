@@ -272,7 +272,7 @@ Adesk::Boolean CextDbTin::subWorldDraw(AcGiWorldDraw* mode)
     return true;
 }
 
-Adesk::UInt32 CextDbTin::subSetAttributes(AcGiDrawableTraits* traits) 
+Adesk::UInt32 CextDbTin::subSetAttributes(AcGiDrawableTraits* traits)
 {
     assertReadEnabled();
     return (AcDbEntity::subSetAttributes(traits));
@@ -471,7 +471,6 @@ Adesk::Boolean CextDbTin::drawContours(AcGiSubEntityTraits& traits, AcGiWorldGeo
 static CePolylines connectSegmentsIntoPolylines(const CeSegments& segments)
 {
     CePolylines polylines;
-    // Map from point to all segments starting or ending at that point
     std::unordered_set<const CeSegment*, SegmentPtrHash> visited;
     std::unordered_multimap<AcGePoint3d, const CeSegment*, Point3DHash> pointToSegs;
     visited.reserve(segments.size());
