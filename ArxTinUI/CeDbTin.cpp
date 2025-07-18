@@ -655,54 +655,60 @@ void CextDbTin::computeTiangles()
 
 void CextDbTin::genMajorContours()
 {
-    m_majorContours.clear();
-    if (isZero(m_majorZ))
-        return;
-    CeContourLevels contourLevels;
-    for (int64_t idx = int64_t(m_zmin); idx < int64_t(m_zmax); idx += m_majorZ)
+    if (GETBIT(int(m_drawFlags), int(DrawFlags::kDrawContours)))
     {
-        const auto nearest = roundToNearest(idx, m_majorZ);
-        contourLevels.push_back(nearest);
-        m_contourSet.insert(nearest);
-    }
-    m_majorContours.reserve(contourLevels.size());
-
-    CeSegmentsMap map;
-    map.reserve(contourLevels.size());
-    generateContours(m_points, m_triangles, contourLevels, map);
-    std::for_each(std::execution::par, map.begin(), map.end(), [&](const auto& kv)
+        m_majorContours.clear();
+        if (isZero(m_majorZ))
+            return;
+        CeContourLevels contourLevels;
+        for (int64_t idx = int64_t(m_zmin); idx < int64_t(m_zmax); idx += m_majorZ)
         {
-            const auto& polylines = connectSegmentsIntoPolylines(kv.second);
-            std::lock_guard<std::mutex> lock(m_mtx_);
-            for (const auto& pl : polylines)
-                m_majorContours.push_back(pl);
-        });
+            const auto nearest = roundToNearest(idx, m_majorZ);
+            contourLevels.push_back(nearest);
+            m_contourSet.insert(nearest);
+        }
+        m_majorContours.reserve(contourLevels.size());
+
+        CeSegmentsMap map;
+        map.reserve(contourLevels.size());
+        generateContours(m_points, m_triangles, contourLevels, map);
+        std::for_each(std::execution::par, map.begin(), map.end(), [&](const auto& kv)
+            {
+                const auto& polylines = connectSegmentsIntoPolylines(kv.second);
+                std::lock_guard<std::mutex> lock(m_mtx_);
+                for (const auto& pl : polylines)
+                    m_majorContours.push_back(pl);
+            });
+    }
 }
 
 void CextDbTin::genMinorContours()
 {
-    m_minorContours.clear();
-    if (isZero(m_minorZ))
-        return;
-    CeContourLevels contourLevels;
-    for (int64_t idx = int64_t(m_zmin); idx < int64_t(m_zmax); idx += m_minorZ)
+    if (GETBIT(int(m_drawFlags), int(DrawFlags::kDrawContours)))
     {
-        const auto nearest = roundToNearest(idx, m_minorZ);
-        if (!m_contourSet.contains(nearest))
-            contourLevels.push_back(nearest);
-    }
-    m_minorContours.reserve(contourLevels.size());
-
-    CeSegmentsMap map;
-    map.reserve(contourLevels.size());
-    generateContours(m_points, m_triangles, contourLevels, map);
-    std::for_each(std::execution::par, map.begin(), map.end(), [&](const auto& kv)
+        m_minorContours.clear();
+        if (isZero(m_minorZ))
+            return;
+        CeContourLevels contourLevels;
+        for (int64_t idx = int64_t(m_zmin); idx < int64_t(m_zmax); idx += m_minorZ)
         {
-            const auto& polylines = connectSegmentsIntoPolylines(kv.second);
-            std::lock_guard<std::mutex> lock(m_mtx_);
-            for (const auto& pl : polylines)
-                m_minorContours.push_back(pl);
-        });
+            const auto nearest = roundToNearest(idx, m_minorZ);
+            if (!m_contourSet.contains(nearest))
+                contourLevels.push_back(nearest);
+        }
+        m_minorContours.reserve(contourLevels.size());
+
+        CeSegmentsMap map;
+        map.reserve(contourLevels.size());
+        generateContours(m_points, m_triangles, contourLevels, map);
+        std::for_each(std::execution::par, map.begin(), map.end(), [&](const auto& kv)
+            {
+                const auto& polylines = connectSegmentsIntoPolylines(kv.second);
+                std::lock_guard<std::mutex> lock(m_mtx_);
+                for (const auto& pl : polylines)
+                    m_minorContours.push_back(pl);
+            });
+    }
 }
 
 AcCmColor CextDbTin::pointColor() const

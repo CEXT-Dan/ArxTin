@@ -81,26 +81,25 @@ public:
     {
         using CextDbTinUPtr = AcDbObjectUPtr<CextDbTin>;
         auto [es, ids] = ssget();
-        if (es != Acad::PromptStatus::eNormal)
+        if (es != Acad::PromptStatus::eNormal || ids.length() < 3)
         {
             acutPrintf(_T("\nOOF"));
             return;
         }
 
         double maxz = 1;
-        if (auto res = acedGetReal(_T("\nEnter a major contour interval: "), &maxz); res != RTNORM || isZero(maxz))
-        {
-            acutPrintf(_T("\nOOF"));
-            return;
-        }
-
-
         double minz = 1;
-        if (auto res = acedGetReal(_T("\nEnter a minor contour interval: "), &minz); res != RTNORM || isZero(minz))
+        int32_t drawFlags = 0;
+        if (auto res = acedGetReal(_T("\nEnter a major contour interval (Enter 0 for none): "), &maxz); res == RTNORM && !isZero(maxz))
         {
-            acutPrintf(_T("\nOOF"));
-            return;
+            drawFlags |= int32_t(CextDbTin::DrawFlags::kDrawContours);
+            if (auto res = acedGetReal(_T("\nEnter a minor contour interval (Enter 0 for none): "), &minz); res != RTNORM || isZero(minz))
+                minz = maxz;
         }
+   
+        int drawtin = 0;
+        if (auto res = acedGetInt(_T("\nDraw triangles (1 = Y, 0 = N) <0> : "), &drawtin); res == RTNORM && drawtin != 0)
+            drawFlags |= int32_t(CextDbTin::DrawFlags::kDrawTin);
 
         auto points = getGePoints(ids);
         AcDbDatabase* pDb = acdbCurDwg();
@@ -110,11 +109,7 @@ public:
         CextDbTinUPtr ptin(new CextDbTin(points));
 
         //what to draw
-       CextDbTin::DrawFlags flags = static_cast<CextDbTin::DrawFlags>(
-            int32_t(CextDbTin::DrawFlags::kDrawTin) |
-            int32_t(CextDbTin::DrawFlags::kDrawContours));
-
-        ptin->setDrawFlags(flags);
+        ptin->setDrawFlags(static_cast<CextDbTin::DrawFlags>(drawFlags));
 
         AcCmColor tincolor;
         tincolor.setColorIndex(139);
