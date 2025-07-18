@@ -797,6 +797,33 @@ void CextDbTin::setDrawFlags(DrawFlags val)
     m_drawFlags = val;
 }
 
+//we have an area method already
+static double triangleArea(const AcGePoint3d& p1, const AcGePoint3d& p2, const AcGePoint3d& p3) {
+    return 0.5 * std::abs(p1.x * (p2.y - p3.y) + p2.x * (p3.y - p1.y) + p3.x * (p1.y - p2.y));
+}
+
+static bool isPointInTriangle(const AcGePoint3d& p, const AcGePoint3d& t1, const AcGePoint3d& t2, const AcGePoint3d& t3)
+{
+    double totalArea = triangleArea(t1, t2, t3);
+    double area1 = triangleArea(p, t2, t3);
+    double area2 = triangleArea(t1, p, t3);
+    double area3 = triangleArea(t1, t2, p);
+    return std::abs(totalArea - (area1 + area2 + area3)) < 1e-9;
+}
+
+CeTriangle CextDbTin::getTrangleFromPoint(const AcGePoint3d& source)
+{
+    for (const auto& tri : m_triangles)
+    {
+        const AcGePoint3d& t1 = m_points[tri[0]];
+        const AcGePoint3d& t2 = m_points[tri[1]];
+        const AcGePoint3d& t3 = m_points[tri[2]];
+        if (isPointInTriangle(source, t1, t2, t3))
+            return tri;
+    }
+    return invalidTiangle;
+}
+
 AcCmTransparency CextDbTin::pointTransparency() const
 {
     return m_pointTransparency;

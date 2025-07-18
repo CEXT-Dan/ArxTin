@@ -137,7 +137,7 @@ public:
     double      area3d() const;
 
     AcCmTransparency pointTransparency() const;
-    void             setPointTransparency(const AcCmTransparency &val);
+    void             setPointTransparency(const AcCmTransparency& val);
     AcCmTransparency tinTransparency() const;
     void             setTinTransparency(const AcCmTransparency& val);
     AcCmTransparency minorTransparency() const;
@@ -147,6 +147,12 @@ public:
 
     CextDbTin::DrawFlags drawFlags() const;
     void                 setDrawFlags(CextDbTin::DrawFlags val);
+
+    CeTriangle       getTrangleFromPoint(const AcGePoint3d& sourceWCS);
+
+
+public:
+    inline static CeTriangle invalidTiangle = CeTriangle{ std::wstring::npos, std::wstring::npos, std::wstring::npos };
 
 protected:
     //filed
@@ -179,7 +185,6 @@ protected:
     double m_zmax = std::numeric_limits<int64_t>::min();
     double m_area2d = 0.0;
     double m_area3d = 0.0;
-
     bool m_dirty = false;
 };
 

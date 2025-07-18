@@ -53,6 +53,17 @@ public:
     {
     }
 
+    static auto entsel() -> std::tuple<Acad::PromptStatus, AcDbObjectId, AcGePoint3d>
+    {
+        AcDbObjectId id;
+        AcGePoint3d pnt;
+        ads_name name = { 0L };
+        int res = acedEntSel(L"\nSelect it: ", name, asDblArray(pnt));
+        if (auto es = acdbGetObjectId(id, name); es != eOk)
+            return std::make_tuple(Acad::PromptStatus::eError, id, pnt);
+        return std::make_tuple(Acad::PromptStatus(res), id, pnt);
+    }
+
     static auto ssget() -> std::tuple<Acad::PromptStatus, AcDbObjectIdArray>
     {
         AcDbObjectIdArray ids;
@@ -63,6 +74,13 @@ public:
             return std::make_tuple(Acad::PromptStatus::eError, ids);
         acedSSFree(ssname);
         return std::make_tuple(Acad::PromptStatus(res), std::move(ids));
+    }
+
+    static auto getPoint() -> std::tuple<Acad::PromptStatus, AcGePoint3d>
+    {
+        AcGePoint3d pnt;
+        int res = acedGetPoint(NULL, _T("\nGetPoint: "), asDblArray(pnt));;
+        return std::make_tuple(Acad::PromptStatus(res), pnt);
     }
 
     static auto getGePoints(const AcDbObjectIdArray& ids) -> CePoints
@@ -134,10 +152,25 @@ public:
         model->appendAcDbEntity(ptin.get());
         timer.end(_T("Done "));
     }
+
+    static void CArxTinUIApp_tintest(void)
+    {
+        auto [ps, id, pnt] = entsel();
+        AcDbObjectPointer<CextDbTin> tin(id);
+
+        auto [ps2, pnt2] = getPoint();
+
+        PerfTimer timer(__FUNCTIONW__);
+        auto result = tin->getTrangleFromPoint(pnt2);
+        timer.end(_T("Done "));
+
+        acutPrintf(_T("\nFound %ld, %ld, %ld"), result[0], result[1], result[2]);
+    }
 };
 
 //-----------------------------------------------------------------------------
 #pragma warning( disable: 4838 ) //prevents a cast compiler warning, 
 ACED_ARXCOMMAND_ENTRY_AUTO(CArxTinUIApp, CArxTinUIApp, _tinner, tinner, ACRX_CMD_TRANSPARENT, NULL)
+ACED_ARXCOMMAND_ENTRY_AUTO(CArxTinUIApp, CArxTinUIApp, _tintest, tintest, ACRX_CMD_TRANSPARENT, NULL)
 IMPLEMENT_ARX_ENTRYPOINT(CArxTinUIApp)
 #pragma warning( pop )
