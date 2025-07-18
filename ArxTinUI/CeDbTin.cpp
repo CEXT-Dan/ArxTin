@@ -272,7 +272,8 @@ Adesk::Boolean CextDbTin::subWorldDraw(AcGiWorldDraw* mode)
     return true;
 }
 
-Adesk::UInt32 CextDbTin::subSetAttributes(AcGiDrawableTraits* traits) {
+Adesk::UInt32 CextDbTin::subSetAttributes(AcGiDrawableTraits* traits) 
+{
     assertReadEnabled();
     return (AcDbEntity::subSetAttributes(traits));
 }
@@ -298,7 +299,7 @@ Acad::ErrorStatus CextDbTin::subGetOsnapPoints(
 Acad::ErrorStatus CextDbTin::subTransformBy(const AcGeMatrix3d& xform)
 {
     assertWriteEnabled();
-    std::for_each(std::execution::par, m_points.begin(), m_points.end(), [&](AcGePoint3d& p) { p.transformBy(xform); });
+    std::for_each(std::execution::par_unseq, m_points.begin(), m_points.end(), [&](AcGePoint3d& p) { p.transformBy(xform); });
     return xDataTransformBy(xform);
 }
 
@@ -669,7 +670,7 @@ void CextDbTin::genMajorContours()
     CeSegmentsMap map;
     map.reserve(contourLevels.size());
     generateContours(m_points, m_triangles, contourLevels, map);
-    std::for_each(std::execution::par_unseq, map.begin(), map.end(), [&](const auto& kv)
+    std::for_each(std::execution::par, map.begin(), map.end(), [&](const auto& kv)
         {
             const auto& polylines = connectSegmentsIntoPolylines(kv.second);
             std::lock_guard<std::mutex> lock(m_mtx_);
@@ -695,7 +696,7 @@ void CextDbTin::genMinorContours()
     CeSegmentsMap map;
     map.reserve(contourLevels.size());
     generateContours(m_points, m_triangles, contourLevels, map);
-    std::for_each(std::execution::par_unseq, map.begin(), map.end(), [&](const auto& kv)
+    std::for_each(std::execution::par, map.begin(), map.end(), [&](const auto& kv)
         {
             const auto& polylines = connectSegmentsIntoPolylines(kv.second);
             std::lock_guard<std::mutex> lock(m_mtx_);
