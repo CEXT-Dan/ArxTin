@@ -68,6 +68,8 @@
 #include <chrono>
 #include <string>
 #include <array>
+#include <numbers>
+
 #include "TCHAR.h"
 
 
@@ -129,6 +131,17 @@
 
 //- Declare it as an extern here so that it becomes available in all modules
 extern AcApDataManager<CDocData> DocVars;
+
+template<typename IteratorType>
+constexpr auto makeIterator = [](const auto& record)
+    {
+        IteratorType* pIter = nullptr;
+        Acad::ErrorStatus es = record.newIterator(pIter);
+        return std::make_tuple(es, std::unique_ptr<IteratorType>(pIter));
+    };
+constexpr auto makeAcDbSymbolTableIterator = makeIterator<AcDbSymbolTableIterator>;
+constexpr auto makeBlockTableIterator = makeIterator<AcDbBlockTableIterator>;
+constexpr auto makeBlockTableRecordIterator = makeIterator<AcDbBlockTableRecordIterator>;
 
 //-------------------------------------------------------------------------------------
 //AcResBufPtr

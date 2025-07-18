@@ -34,8 +34,16 @@ class CArxTinInputPointMonitor : public AcEdInputPointMonitor
 public:
     virtual Acad::ErrorStatus monitorInputPoint(const AcEdInputPoint& input, AcEdInputPointMonitorResult& output) override
     {
-        for (auto& id : input.pickedEntities())
+        
+        AcDbDatabase* pDb = acdbCurDwg();
+        AcDbBlockTableRecordPointer model(acdbSymUtil()->blockModelSpaceId(pDb));
+        auto [es, iter] = makeBlockTableRecordIterator(*model);
+        if (es != eOk)
+            return eOk;
+        for (iter->start(); !iter->done(); iter->step())
         {
+            AcDbObjectId id;
+            iter->getEntityId(id);
             if (id.objectClass()->isDerivedFrom(CextDbTin::desc()))
             {
                 AcDbObjectPointer<CextDbTin> tin(id);
@@ -43,7 +51,9 @@ public:
                 if (tin->getElevationFromPoint(input.rawPoint(), elev) == eOk)
                 {
                     AcString tstr;
-                    tstr.format(_T("Tin Elevation = %lf"), elev);
+                    double slope = 0;
+                    tin->getSlopeFromPoint(input.rawPoint(), slope);
+                    tstr.format(_T("Elevation = %lf\nSlope = %lf\u00B0"), elev, slope);
                     output.setAdditionalTooltipString(tstr);
                 }
             }
@@ -182,6 +192,21 @@ public:
         timer.end(_T("Done "));
     }
 
+    static void CArxTinUIApp_tininspect(void)
+    {
+        bool isrunning = false;
+        if (!isrunning)
+        {
+            curDoc()->inputPointManager()->addPointMonitor(&CArxTinInputPointMonitor::instance());
+            isrunning = true;
+        }
+        else
+        {
+            curDoc()->inputPointManager()->removePointMonitor(&CArxTinInputPointMonitor::instance());
+            isrunning = false;
+        }
+    }
+
     static void CArxTinUIApp_tintest(void)
     {
         bool isrunning = false;
@@ -201,6 +226,7 @@ public:
 //-----------------------------------------------------------------------------
 #pragma warning( disable: 4838 ) //prevents a cast compiler warning, 
 ACED_ARXCOMMAND_ENTRY_AUTO(CArxTinUIApp, CArxTinUIApp, _tinner, tinner, ACRX_CMD_TRANSPARENT, NULL)
+ACED_ARXCOMMAND_ENTRY_AUTO(CArxTinUIApp, CArxTinUIApp, _tininspect, tininspect, ACRX_CMD_TRANSPARENT, NULL)
 ACED_ARXCOMMAND_ENTRY_AUTO(CArxTinUIApp, CArxTinUIApp, _tintest, tintest, ACRX_CMD_TRANSPARENT, NULL)
 IMPLEMENT_ARX_ENTRYPOINT(CArxTinUIApp)
 #pragma warning( pop )

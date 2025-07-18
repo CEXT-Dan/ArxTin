@@ -150,6 +150,7 @@ public:
 
     CeTriangle        getTrangleFromPoint(const AcGePoint3d& sourceWCS) const;
     Acad::ErrorStatus getElevationFromPoint(const AcGePoint3d& sourceWCS, double& elev) const;
+    Acad::ErrorStatus getSlopeFromPoint(const AcGePoint3d& sourceWCS, double& slope) const;
 
 
 public:

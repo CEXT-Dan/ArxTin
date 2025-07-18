@@ -853,6 +853,33 @@ Acad::ErrorStatus CextDbTin::getElevationFromPoint(const AcGePoint3d& sourceWCS,
     return eInvalidInput;
 }
 
+static AcGeVector3d computeTiangleNormal(const CeTriangle& tri, const CePoints& points)
+{
+    const AcGePoint3d& A = points[tri[0]];
+    const AcGePoint3d& B = points[tri[1]];
+    const AcGePoint3d& C = points[tri[2]];
+    AcGeVector3d AB = B - A;
+    AcGeVector3d AC = C - A;
+    AcGeVector3d normal = AB.crossProduct(AC);
+    return normal.normalize();
+}
+
+static double computeSlopeFromNormal(const AcGeVector3d& normal)
+{
+    AcGeVector3d n = normal.normal();
+    double cosTheta = std::max(-1.0, std::min(1.0, std::abs(n.z)));
+    double thetaRad = std::acos(cosTheta);
+    return thetaRad * (180.0 / std::numbers::pi);
+}
+
+Acad::ErrorStatus CextDbTin::getSlopeFromPoint(const AcGePoint3d& sourceWCS, double& slope) const
+{
+    const auto& tri = getTrangleFromPoint(sourceWCS);
+    const auto& normal = computeTiangleNormal(tri, m_points);
+    slope = computeSlopeFromNormal(normal);
+    return eOk;
+}
+
 AcCmTransparency CextDbTin::pointTransparency() const
 {
     return m_pointTransparency;
