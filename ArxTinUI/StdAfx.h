@@ -116,6 +116,10 @@
 #define SETBIT(flags, bit, value) ((value) ? (flags |= (bit)) : (flags &= ~(bit)))
 #define GETBIT(flags, bit) (((flags) & (bit)) ? true : false)
 
+#if defined(_ARXAPP)
+#pragma comment( lib , "AcPal.lib" )
+#endif
+
 #if defined(_GRXAPP)
 #pragma comment( lib , "gcad.lib" )
 #pragma comment( lib , "gcbase.lib" )
@@ -248,10 +252,10 @@ public:
     {
         switch (dim)
         {
-            case 0:
-                return mitems.at(idx).x;
-            default:
-                return mitems.at(idx).y;
+        case 0:
+            return mitems.at(idx).x;
+        default:
+            return mitems.at(idx).y;
         }
     }
 

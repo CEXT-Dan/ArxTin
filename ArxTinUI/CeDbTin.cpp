@@ -204,16 +204,16 @@ Acad::ErrorStatus CextDbTin::dxfInFields(AcDbDxfFiler* pFiler) {
     {
         switch (rb.restype)
         {
-            case AcDb::kDxfXCoord:
-                m_points.push_back(asPnt3d(rb.resval.rpoint));
-                break;
-            case AcDb::kDxfInt64:
-                npoints = rb.resval.mnInt64;
-                break;
-            default:
-                pFiler->pushBackItem();
-                es = Acad::eEndOfFile;
-                break;
+        case AcDb::kDxfXCoord:
+            m_points.push_back(asPnt3d(rb.resval.rpoint));
+            break;
+        case AcDb::kDxfInt64:
+            npoints = rb.resval.mnInt64;
+            break;
+        default:
+            pFiler->pushBackItem();
+            es = Acad::eEndOfFile;
+            break;
         }
     }
     if (es != Acad::eEndOfFile)
@@ -815,37 +815,25 @@ static bool isPointInTriangle(const AcGePoint3d& p, const AcGePoint3d& t1, const
 CeTriangle CextDbTin::getTrangleFromPoint(const AcGePoint3d& source) const
 {
     std::atomic<size_t> found = std::wstring::npos;
-	concurrency::cancellation_token_source cts;
-	concurrency::run_with_cancellation_token([&]()
-		{
-			concurrency::parallel_for(size_t(0), m_triangles.size(), [&](size_t idx)
-				{
-					const auto& tri = m_triangles[idx];
-					const AcGePoint3d& t1 = m_points[tri[0]];
-					const AcGePoint3d& t2 = m_points[tri[1]];
-					const AcGePoint3d& t3 = m_points[tri[2]];
-					if (isPointInTriangle(source, t1, t2, t3))
-					{
-						found = idx;
-						cts.cancel();
-					}
-				});
-		}, cts.get_token());
-	if (found != std::wstring::npos)
-		return m_triangles[found];
-	return invalidTiangle;
-
-#ifdef _NEVER
-    for (const auto& tri : m_triangles)
-    {
-        const AcGePoint3d& t1 = m_points[tri[0]];
-        const AcGePoint3d& t2 = m_points[tri[1]];
-        const AcGePoint3d& t3 = m_points[tri[2]];
-        if (isPointInTriangle(source, t1, t2, t3))
-            return tri;
-    }
+    concurrency::cancellation_token_source cts;
+    concurrency::run_with_cancellation_token([&]()
+        {
+            concurrency::parallel_for(size_t(0), m_triangles.size(), [&](size_t idx)
+                {
+                    const auto& tri = m_triangles[idx];
+                    const AcGePoint3d& t1 = m_points[tri[0]];
+                    const AcGePoint3d& t2 = m_points[tri[1]];
+                    const AcGePoint3d& t3 = m_points[tri[2]];
+                    if (isPointInTriangle(source, t1, t2, t3))
+                    {
+                        found = idx;
+                        cts.cancel();
+                    }
+                });
+        }, cts.get_token());
+    if (found != std::wstring::npos)
+        return m_triangles[found];
     return invalidTiangle;
-#endif
 }
 
 Acad::ErrorStatus CextDbTin::getElevationFromPoint(const AcGePoint3d& sourceWCS, double& elev) const

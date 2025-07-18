@@ -29,6 +29,35 @@
 //-----------------------------------------------------------------------------
 #define szRDS _RXST("")
 
+class CArxTinInputPointMonitor : public AcEdInputPointMonitor
+{
+public:
+    virtual Acad::ErrorStatus monitorInputPoint(const AcEdInputPoint& input, AcEdInputPointMonitorResult& output) override
+    {
+        for (auto& id : input.pickedEntities())
+        {
+            if (id.objectClass()->isDerivedFrom(CextDbTin::desc()))
+            {
+                AcDbObjectPointer<CextDbTin> tin(id);
+                double elev = 0;
+                if (tin->getElevationFromPoint(input.rawPoint(), elev) == eOk)
+                {
+                    AcString tstr;
+                    tstr.format(_T("Tin Elevation = %lf"), elev);
+                    output.setAdditionalTooltipString(tstr);
+                }
+            }
+        }
+        return Acad::eOk;
+    }
+    static CArxTinInputPointMonitor& instance()
+    {
+        static CArxTinInputPointMonitor mthis;
+        return mthis;
+    }
+};
+
+
 //-----------------------------------------------------------------------------
 //----- ObjectARX EntryPoint
 class CArxTinUIApp : public AcRxArxApp {
@@ -155,16 +184,17 @@ public:
 
     static void CArxTinUIApp_tintest(void)
     {
-        auto [ps, id, pnt] = entsel();
-        AcDbObjectPointer<CextDbTin> tin(id);
-
-        auto [ps2, pnt2] = getPoint();
-
-        PerfTimer timer(__FUNCTIONW__);
-        double elev = 0;
-        tin->getElevationFromPoint(pnt2, elev);
-        acutPrintf(_T("\nFound %f"), elev);
-        timer.end(_T("Done "));
+        bool isrunning = false;
+        if (!isrunning)
+        {
+            curDoc()->inputPointManager()->addPointMonitor(&CArxTinInputPointMonitor::instance());
+            isrunning = true;
+        }
+        else
+        {
+            curDoc()->inputPointManager()->removePointMonitor(&CArxTinInputPointMonitor::instance());
+            isrunning = false;
+        }
     }
 };
 
