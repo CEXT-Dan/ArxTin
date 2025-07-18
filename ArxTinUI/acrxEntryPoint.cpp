@@ -161,10 +161,10 @@ public:
         auto [ps2, pnt2] = getPoint();
 
         PerfTimer timer(__FUNCTIONW__);
-        auto result = tin->getTrangleFromPoint(pnt2);
+        double elev = 0;
+        tin->getElevationFromPoint(pnt2, elev);
+        acutPrintf(_T("\nFound %f"), elev);
         timer.end(_T("Done "));
-
-        acutPrintf(_T("\nFound %ld, %ld, %ld"), result[0], result[1], result[2]);
     }
 };
 

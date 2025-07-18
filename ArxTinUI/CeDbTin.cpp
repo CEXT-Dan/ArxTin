@@ -824,6 +824,23 @@ CeTriangle CextDbTin::getTrangleFromPoint(const AcGePoint3d& source)
     return invalidTiangle;
 }
 
+Acad::ErrorStatus CextDbTin::getElevationFromPoint(const AcGePoint3d& sourceWCS,double &elev)
+{
+    CeTriangle tri = getTrangleFromPoint(sourceWCS);
+    if (tri != invalidTiangle)
+    {
+        const AcGePoint3d& t1 = m_points[tri[0]];
+        const AcGePoint3d& t2 = m_points[tri[1]];
+        const AcGePoint3d& t3 = m_points[tri[2]];
+        AcGePlane plane(t1, t2 - t1, t3 - t1);
+        AcGePointOnSurface sp;
+        plane.getClosestPointTo(sourceWCS, sp);
+        elev = sp.point().z;
+        return eOk;
+    }
+    return eInvalidInput;
+}
+
 AcCmTransparency CextDbTin::pointTransparency() const
 {
     return m_pointTransparency;
