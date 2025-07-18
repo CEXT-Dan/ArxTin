@@ -375,6 +375,14 @@ void CextDbTin::setPoints(const CePoints& points)
     recompute();
 }
 
+void CextDbTin::createTree()
+{
+    nanoflann::KDTreeSingleIndexAdaptorParams params;
+    params.leaf_max_size = 16;
+    params.n_thread_build = 0;
+    m_pTree.reset(new kd_tree3d_t(2, m_adapter, params));
+    m_pTree->buildIndex();
+}
 
 void CextDbTin::recompute(bool force /*= false*/)
 {
@@ -477,12 +485,11 @@ static CePolylines connectSegmentsIntoPolylines(const CeSegments& segments)
         if (visited.count(&seg))
             continue;
 
-        CePolyline polyline, first, sec;
-        sec.push_back(seg.second);
-        first.push_back(seg.first);
+        CePolyline polyline, left, right;
+        left.push_back(seg.first);
+        right.push_back(seg.second);
         visited.insert(&seg);
 
-        // Extend forward
         AcGePoint3d current = seg.second;
         while (true)
         {
@@ -496,12 +503,12 @@ static CePolylines connectSegmentsIntoPolylines(const CeSegments& segments)
 
                 if (current.isEqualTo(nextSeg->first))
                 {
-                    first.push_back(nextSeg->second);
+                    left.push_back(nextSeg->second);
                     current = nextSeg->second;
                 }
                 else if (current.isEqualTo(nextSeg->second))
                 {
-                    first.push_back(nextSeg->first);
+                    left.push_back(nextSeg->first);
                     current = nextSeg->first;
                 }
                 else
@@ -516,7 +523,6 @@ static CePolylines connectSegmentsIntoPolylines(const CeSegments& segments)
                 break;
         }
 
-        // Extend backward
         current = seg.first;
         while (true)
         {
@@ -530,12 +536,12 @@ static CePolylines connectSegmentsIntoPolylines(const CeSegments& segments)
 
                 if (current.isEqualTo(prevSeg->first))
                 {
-                    sec.push_back(prevSeg->second);
+                    right.push_back(prevSeg->second);
                     current = prevSeg->second;
                 }
                 else if (current.isEqualTo(prevSeg->second))
                 {
-                    sec.push_back(prevSeg->first);
+                    right.push_back(prevSeg->first);
                     current = prevSeg->first;
                 }
                 else
@@ -549,9 +555,9 @@ static CePolylines connectSegmentsIntoPolylines(const CeSegments& segments)
             if (!extended)
                 break;
         }
-        polyline.reserve(first.size() + sec.size());
-        polyline.insert(polyline.end(), sec.rbegin(), sec.rend());
-        polyline.insert(polyline.end(), first.begin(), first.end());
+        polyline.reserve(left.size() + right.size());
+        polyline.insert(polyline.end(), right.rbegin(), right.rend());
+        polyline.insert(polyline.end(), left.begin(), left.end());
         polylines.push_back(polyline);
     }
     return polylines;
@@ -587,7 +593,6 @@ static void processTriangle(const CePoints& points, const CeTriangle& tri, doubl
 
 static void generateContours(const CePoints& points, const CeTriangles& triangles, const CeContourLevels& contourLevels, CeSegmentsMap& map)
 {
-    CeSegments segments;
     for (const auto& tri : triangles)
     {
         for (double level : contourLevels)
@@ -828,13 +833,4 @@ void CextDbTin::setMajorTransparency(const AcCmTransparency& val)
 {
     assertWriteEnabled();
     m_majorTransparency = val;
-}
-
-void CextDbTin::createTree()
-{
-    nanoflann::KDTreeSingleIndexAdaptorParams params;
-    params.leaf_max_size = 16;
-    params.n_thread_build = 0;
-    m_pTree.reset(new kd_tree3d_t(2, m_adapter, params));
-    m_pTree->buildIndex();
 }
