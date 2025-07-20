@@ -219,7 +219,9 @@ public:
             acutPrintf(_T("\nOOF"));
             return;
         }
-        AcDbObjectPointer<CextDbTin> tin(id);
+        AcDbObjectPointer<CextDbTin> tin(id, AcDb::OpenMode::kForWrite);
+        auto clpoint = tin->getClosestPointTo(pnt);
+        tin->addPoint(clpoint);
     }
 };
 

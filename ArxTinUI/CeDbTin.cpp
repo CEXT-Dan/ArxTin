@@ -285,13 +285,10 @@ Adesk::Boolean CextDbTin::subWorldDraw(AcGiWorldDraw* mode)
     assertReadEnabled();
     auto& rTraits = mode->subEntityTraits();
     auto& rGeo = mode->geometry();
-
     recompute();
-
     drawPoints(rTraits, rGeo);
     drawTriangles(rTraits, rGeo);
     drawContours(rTraits, rGeo);
-
     return true;
 }
 
@@ -322,18 +319,18 @@ Acad::ErrorStatus CextDbTin::subGetOsnapPoints(
 Acad::ErrorStatus CextDbTin::subTransformBy(const AcGeMatrix3d& xform)
 {
     assertWriteEnabled();
-    std::for_each(std::execution::par, m_points.begin(), m_points.end(), [&](AcGePoint3d& p) 
-        { 
-            p.transformBy(xform); 
+    std::for_each(std::execution::par, m_points.begin(), m_points.end(), [&](AcGePoint3d& p)
+        {
+            p.transformBy(xform);
         });
-    std::for_each(std::execution::par, m_majorContours.begin(), m_majorContours.end(), [&](CePolyline& p) 
-        { 
-            for (auto& pnt : p)
+    std::for_each(std::execution::par, m_majorContours.begin(), m_majorContours.end(), [&](CePolyline& pline)
+        {
+            for (auto& pnt : pline)
                 pnt.transformBy(xform);
         });
-    std::for_each(std::execution::par, m_minorContours.begin(), m_minorContours.end(), [&](CePolyline& p)
+    std::for_each(std::execution::par, m_minorContours.begin(), m_minorContours.end(), [&](CePolyline& pline)
         {
-            for (auto& pnt : p)
+            for (auto& pnt : pline)
                 pnt.transformBy(xform);
         });
     return xDataTransformBy(xform);
@@ -846,6 +843,26 @@ void CextDbTin::setMinorContourColor(const AcCmColor& val)
     m_minorContourColor = val;
 }
 
+AcGePoint3d CextDbTin::getClosestPointTo(const AcGePoint3d& point)
+{
+    const auto& tri = getTriangleFromPoint(point);
+    if (tri != invalidTiangle)
+    {
+        const AcGePoint3d& t1 = m_points[tri[0]];
+        const AcGePoint3d& t2 = m_points[tri[1]];
+        const AcGePoint3d& t3 = m_points[tri[2]];
+        AcGePlane plane(t1, t2 - t1, t3 - t1);
+        return point.project(plane, AcGeVector3d::kZAxis);
+    }
+    return AcGePoint3d{};
+}
+
+void CextDbTin::addPoint(const AcGePoint3d& point)
+{
+    assertWriteEnabled();
+    m_points.push_back(point);
+}
+
 double CextDbTin::majorZ() const
 {
     return m_majorZ;
@@ -903,7 +920,7 @@ static bool isPointInTriangle(const AcGePoint3d& p, const AcGePoint3d& t1, const
     return std::abs(totalArea - (area1 + area2 + area3)) < 1e-9;
 }
 
-CeTriangle CextDbTin::getTrangleFromPoint(const AcGePoint3d& source) const
+CeTriangle CextDbTin::getTriangleFromPoint(const AcGePoint3d& source) const
 {
     std::atomic<size_t> found = std::wstring::npos;
     concurrency::cancellation_token_source cts;
@@ -935,9 +952,7 @@ Acad::ErrorStatus CextDbTin::getElevationFromPoint(const CeTriangle& tri, const 
         const AcGePoint3d& t2 = m_points[tri[1]];
         const AcGePoint3d& t3 = m_points[tri[2]];
         AcGePlane plane(t1, t2 - t1, t3 - t1);
-        AcGePointOnSurface sp;
-        plane.getClosestPointTo(sourceWCS, sp);
-        elev = sp.point().z;
+        elev = sourceWCS.project(plane, AcGeVector3d::kZAxis).z;
         return eOk;
     }
     return eInvalidInput;
@@ -946,7 +961,7 @@ Acad::ErrorStatus CextDbTin::getElevationFromPoint(const CeTriangle& tri, const 
 TinQueryInfo CextDbTin::getInfoFromPoint(const AcGePoint3d& sourceWCS) const
 {
     TinQueryInfo info;
-    const auto& tri = getTrangleFromPoint(sourceWCS);
+    const auto& tri = getTriangleFromPoint(sourceWCS);
     AcGeVector3d normal = AcGeVector3d::kZAxis;
     computeTiangleNormal(tri, m_points, normal);
     info.slope = computeSlopeFromNormal(normal);
@@ -959,7 +974,7 @@ CeTriangleIndexs CextDbTin::getAdjacentTrianglesIndexs(const CeTriangle& tri) co
     CeTriangleIndexs tris;
     if (tri == invalidTiangle)
         return tris;
-    size_t triIdx = getTiangleIndex(tri);
+    size_t triIdx = getTriangleIndex(tri);
     if (triIdx == INVALID_INDEX)
         return tris;
     for (int i = 0; i < 3; ++i)
@@ -989,7 +1004,7 @@ AcGePoint3d CextDbTin::trianglecentroid(const CeTriangle& tri) const
     return AcGePoint3d{ CX, CY, CZ };
 }
 
-size_t CextDbTin::getTiangleIndex(const CeTriangle& tri) const
+size_t CextDbTin::getTriangleIndex(const CeTriangle& tri) const
 {
     auto iter = std::find(m_triangles.begin(), m_triangles.end(), tri);
     if (iter != m_triangles.end())

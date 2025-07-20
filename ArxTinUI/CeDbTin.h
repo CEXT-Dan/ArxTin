@@ -139,6 +139,9 @@ public:
     void        setMajorContourColor(const AcCmColor& val);
     AcCmColor   getMinorContourColor() const;
     void        setMinorContourColor(const AcCmColor& val);
+    AcGePoint3d getClosestPointTo(const AcGePoint3d& point);
+
+    void        addPoint(const AcGePoint3d& point);
 
     double      majorZ() const;
     void        setMajorZ(double val);
@@ -159,13 +162,14 @@ public:
     CextDbTin::DrawFlags drawFlags() const;
     void                 setDrawFlags(CextDbTin::DrawFlags val);
 
-    CeTriangle        getTrangleFromPoint(const AcGePoint3d& sourceWCS) const;
-    size_t            getTiangleIndex(const CeTriangle& tri) const;
+    CeTriangle        getTriangleFromPoint(const AcGePoint3d& sourceWCS) const;
+    size_t            getTriangleIndex(const CeTriangle& tri) const;
     CeTriangle        getTriangleAt(size_t index) const;
     CeTriangleIndexs  getAdjacentTrianglesIndexs(const CeTriangle& tri) const;
     Acad::ErrorStatus getElevationFromPoint(const CeTriangle& tri, const AcGePoint3d& sourceWCS, double& elev) const;
     TinQueryInfo      getInfoFromPoint(const AcGePoint3d& sourceWCS) const;
     AcGePoint3d       trianglecentroid(const CeTriangle& tri) const;
+
 
 
 public:
