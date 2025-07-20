@@ -27,6 +27,30 @@
 #include "delaunator-header-only.hpp"
 #include <ppl.h>
 
+static Acad::ErrorStatus computeTiangleNormal(const CeTriangle& tri, const CePoints& points, AcGeVector3d& normal)
+{
+    if (tri != CextDbTin::invalidTiangle)
+    {
+        const AcGePoint3d& A = points[tri[0]];
+        const AcGePoint3d& B = points[tri[1]];
+        const AcGePoint3d& C = points[tri[2]];
+        AcGeVector3d AB = B - A;
+        AcGeVector3d AC = C - A;
+        normal = AB.crossProduct(AC);
+        // normal.normalize();
+        return eOk;
+    }
+    return eInvalidInput;
+}
+
+static double computeSlopeFromNormal(const AcGeVector3d& normal)
+{
+    AcGeVector3d n = normal.normal();
+    double cosTheta = std::max(-1.0, std::min(1.0, std::abs(n.z)));
+    double thetaRad = std::acos(cosTheta);
+    return thetaRad * (180.0 / std::numbers::pi);
+}
+
 //-----------------------------------------------------------------------------
 Adesk::UInt32 CextDbTin::kCurrentVersionNumber = 1;
 constexpr auto CExtProxyFlags = AcDbProxyEntity::kAllAllowedBits;
@@ -428,10 +452,12 @@ Adesk::Boolean CextDbTin::drawTriangles(AcGiSubEntityTraits& traits, AcGiWorldGe
     if (GETBIT(int(m_drawFlags), int(DrawFlags::kDrawTin)))
     {
         traits.setTransparency(m_tinTransparency);
-        traits.setTrueColor(m_tinColor.entityColor());
+        //traits.setTrueColor(m_tinColor.entityColor());
         std::array<AcGePoint3d, 3>pnts;
+        size_t idx = 0;
         for (const auto& tri : m_triangles)
         {
+            traits.setColor(m_slopeColors[idx++]);
             pnts[0] = m_points[tri[0]];
             pnts[1] = m_points[tri[1]];
             pnts[2] = m_points[tri[2]];
@@ -647,9 +673,63 @@ void CextDbTin::computeTiangles()
         const auto a = d.triangles[i + 0];
         const auto b = d.triangles[i + 1];
         const auto c = d.triangles[i + 2];
-        m_triangles.emplace_back(CeTriangle{ a, b, c });
+        const CeTriangle tri{ a, b, c };
+        m_triangles.emplace_back(tri);
         m_area3d += areaOfTriangle(m_points[a], m_points[b], m_points[c]);
         m_area2d += area2dOfTriangle(m_points[a], m_points[b], m_points[c]);
+        computeSlopeColors(tri);
+    }
+}
+
+void CextDbTin::computeSlopeColors(const CeTriangle& tri)
+{
+    //TODO
+    AcGeVector3d normal = AcGeVector3d::kZAxis;
+    computeTiangleNormal(tri, m_points, normal);
+    auto slope = computeSlopeFromNormal(normal);
+    if (slope >= 0 && slope <= 10)
+    {
+        m_slopeColors.push_back(92);
+    }
+    else if (slope > 10 && slope <= 20)
+    {
+        m_slopeColors.push_back(72);
+    }
+    else if (slope > 20 && slope <= 30)
+    {
+        m_slopeColors.push_back(80);
+    }
+    else if (slope > 30 && slope <= 40)
+    {
+        m_slopeColors.push_back(70);
+    }
+    else if (slope > 40 && slope <= 50)
+    {
+        m_slopeColors.push_back(200);
+    }
+    else if (slope > 50 && slope <= 60)
+    {
+        m_slopeColors.push_back(210);
+    }
+    else if (slope > 60 && slope <= 70)
+    {
+        m_slopeColors.push_back(220);
+    }
+    else if (slope > 70 && slope <= 80)
+    {
+        m_slopeColors.push_back(230);
+    }
+    else if (slope > 80 && slope <= 90)
+    {
+        m_slopeColors.push_back(240);
+    }
+    else if (slope > 90 && slope <= 100)
+    {
+        m_slopeColors.push_back(10);
+    }
+    else
+    {
+        m_slopeColors.push_back(239);
     }
 }
 
@@ -850,30 +930,6 @@ Acad::ErrorStatus CextDbTin::getElevationFromPoint(const CeTriangle& tri, const 
         return eOk;
     }
     return eInvalidInput;
-}
-
-static Acad::ErrorStatus computeTiangleNormal(const CeTriangle& tri, const CePoints& points, AcGeVector3d& normal)
-{
-    if (tri != CextDbTin::invalidTiangle)
-    {
-        const AcGePoint3d& A = points[tri[0]];
-        const AcGePoint3d& B = points[tri[1]];
-        const AcGePoint3d& C = points[tri[2]];
-        AcGeVector3d AB = B - A;
-        AcGeVector3d AC = C - A;
-        normal = AB.crossProduct(AC);
-        // normal.normalize();
-        return eOk;
-    }
-    return eInvalidInput;
-}
-
-static double computeSlopeFromNormal(const AcGeVector3d& normal)
-{
-    AcGeVector3d n = normal.normal();
-    double cosTheta = std::max(-1.0, std::min(1.0, std::abs(n.z)));
-    double thetaRad = std::acos(cosTheta);
-    return thetaRad * (180.0 / std::numbers::pi);
 }
 
 TinQueryInfo CextDbTin::getInfoFromPoint(const AcGePoint3d& sourceWCS) const

@@ -31,15 +31,6 @@ struct TinQueryInfo
     double slope = 0;
 };
 
-constexpr size_t triangleAtEdge(size_t e) noexcept
-{
-    if (e % 3 == 1)
-        return e - 1;
-    else if (e % 3 == 2)
-        return e - 2;
-    return e;
-}
-
 #ifdef ARXTINUI_MODULE
 #define DLLIMPEXP __declspec( dllexport )
 #else
@@ -136,6 +127,7 @@ public:
     void        recompute(bool force = false);
     void        createTree();
     void        computeTiangles();
+    void        computeSlopeColors(const CeTriangle& tri);
     void        genMajorContours();
     void        genMinorContours();
 
@@ -176,7 +168,6 @@ public:
     AcGePoint3d       trianglecentroid(const CeTriangle& tri) const;
 
 
-
 public:
     inline static CeTriangle invalidTiangle = CeTriangle{ INVALID_INDEX, INVALID_INDEX, INVALID_INDEX };
 
@@ -204,6 +195,7 @@ public:
     CePolylines m_minorContours;
     CeTriangles m_triangles;
     CeHalfedges m_halfedges;
+    std::vector<int32_t> m_slopeColors;
     KdAcGePointAdapter m_adapter{ m_points };
     std::shared_ptr<kd_tree3d_t> m_pTree;
     std::unordered_set<double> m_contourSet;
