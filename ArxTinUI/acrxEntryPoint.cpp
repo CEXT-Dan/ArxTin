@@ -220,17 +220,6 @@ public:
             return;
         }
         AcDbObjectPointer<CextDbTin> tin(id);
-
-        auto tri = tin->getTrangleFromPoint(pnt);
-
-        auto vec = tin->getAdjacentTriangles(tri);
-        for (int idx = 0; idx < vec.size(); idx++)
-        {
-            const auto& f = tin->getTriangleAt(vec[idx]);
-            auto npnt = tin->trianglecentroid(f);
-            acedGrDraw(asDblArray(pnt), asDblArray(npnt), 1, 0);
-        }
-
     }
 };
 

@@ -887,7 +887,7 @@ TinQueryInfo CextDbTin::getInfoFromPoint(const AcGePoint3d& sourceWCS) const
     return info;
 }
 
-CeTriangleIndexs CextDbTin::getAdjacentTriangles(const CeTriangle& tri)
+CeTriangleIndexs CextDbTin::getAdjacentTrianglesIndexs(const CeTriangle& tri) const
 {
     CeTriangleIndexs tris;
     if (tri == invalidTiangle)
@@ -899,7 +899,7 @@ CeTriangleIndexs CextDbTin::getAdjacentTriangles(const CeTriangle& tri)
     {
         size_t edgeIdx = triIdx * 3 + i;
         int halfedge = m_halfedges[edgeIdx];
-        if (halfedge != -1)
+        if (halfedge != INVALID_INDEX)
         {
             size_t adjTriIdx = halfedge / 3;
             if (adjTriIdx < m_triangles.size())
@@ -909,7 +909,7 @@ CeTriangleIndexs CextDbTin::getAdjacentTriangles(const CeTriangle& tri)
     return tris;
 }
 
-AcGePoint3d CextDbTin::trianglecentroid(const CeTriangle& tri)
+AcGePoint3d CextDbTin::trianglecentroid(const CeTriangle& tri) const
 {
     if (invalidTiangle == tri)
         return AcGePoint3d{};
@@ -979,10 +979,4 @@ void CextDbTin::setMajorTransparency(const AcCmTransparency& val)
 {
     assertWriteEnabled();
     m_majorTransparency = val;
-}
-
-std::vector<AcGePoint3d> CextDbTin::calculateSteepestPath(const AcGePoint3d& source) const
-{
-    std::vector<AcGePoint3d> path;
-    return path;
 }

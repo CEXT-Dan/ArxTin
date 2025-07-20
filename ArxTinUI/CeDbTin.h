@@ -164,17 +164,16 @@ public:
     AcCmTransparency majorTransparency() const;
     void             setMajorTransparency(const AcCmTransparency& val);
 
-    std::vector<AcGePoint3d> calculateSteepestPath(const AcGePoint3d& source) const;
     CextDbTin::DrawFlags drawFlags() const;
     void                 setDrawFlags(CextDbTin::DrawFlags val);
 
     CeTriangle        getTrangleFromPoint(const AcGePoint3d& sourceWCS) const;
     size_t            getTiangleIndex(const CeTriangle& tri) const;
     CeTriangle        getTriangleAt(size_t index) const;
+    CeTriangleIndexs  getAdjacentTrianglesIndexs(const CeTriangle& tri) const;
     Acad::ErrorStatus getElevationFromPoint(const CeTriangle& tri, const AcGePoint3d& sourceWCS, double& elev) const;
     TinQueryInfo      getInfoFromPoint(const AcGePoint3d& sourceWCS) const;
-    CeTriangleIndexs  getAdjacentTriangles(const CeTriangle& tri);
-    AcGePoint3d       trianglecentroid(const CeTriangle& tri);
+    AcGePoint3d       trianglecentroid(const CeTriangle& tri) const;
 
 
 
