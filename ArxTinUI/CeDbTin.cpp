@@ -457,7 +457,7 @@ Adesk::Boolean CextDbTin::drawTriangles(AcGiSubEntityTraits& traits, AcGiWorldGe
         size_t idx = 0;
         for (const auto& tri : m_triangles)
         {
-            traits.setColor(m_slopeColors[idx++]);
+            traits.setColor(m_triangleColorOverride[idx++]);
             pnts[0] = m_points[tri[0]];
             pnts[1] = m_points[tri[1]];
             pnts[2] = m_points[tri[2]];
@@ -689,47 +689,47 @@ void CextDbTin::computeSlopeColors(const CeTriangle& tri)
     auto slope = computeSlopeFromNormal(normal);
     if (slope >= 0 && slope <= 10)
     {
-        m_slopeColors.push_back(92);
+        m_triangleColorOverride.push_back(92);
     }
     else if (slope > 10 && slope <= 20)
     {
-        m_slopeColors.push_back(72);
+        m_triangleColorOverride.push_back(72);
     }
     else if (slope > 20 && slope <= 30)
     {
-        m_slopeColors.push_back(80);
+        m_triangleColorOverride.push_back(80);
     }
     else if (slope > 30 && slope <= 40)
     {
-        m_slopeColors.push_back(70);
+        m_triangleColorOverride.push_back(70);
     }
     else if (slope > 40 && slope <= 50)
     {
-        m_slopeColors.push_back(200);
+        m_triangleColorOverride.push_back(200);
     }
     else if (slope > 50 && slope <= 60)
     {
-        m_slopeColors.push_back(210);
+        m_triangleColorOverride.push_back(210);
     }
     else if (slope > 60 && slope <= 70)
     {
-        m_slopeColors.push_back(220);
+        m_triangleColorOverride.push_back(220);
     }
     else if (slope > 70 && slope <= 80)
     {
-        m_slopeColors.push_back(230);
+        m_triangleColorOverride.push_back(230);
     }
     else if (slope > 80 && slope <= 90)
     {
-        m_slopeColors.push_back(240);
+        m_triangleColorOverride.push_back(240);
     }
     else if (slope > 90 && slope <= 100)
     {
-        m_slopeColors.push_back(10);
+        m_triangleColorOverride.push_back(10);
     }
     else
     {
-        m_slopeColors.push_back(239);
+        m_triangleColorOverride.push_back(239);
     }
 }
 

@@ -195,7 +195,7 @@ public:
     CePolylines m_minorContours;
     CeTriangles m_triangles;
     CeHalfedges m_halfedges;
-    std::vector<int32_t> m_slopeColors;
+    std::vector<int32_t> m_triangleColorOverride;
     KdAcGePointAdapter m_adapter{ m_points };
     std::shared_ptr<kd_tree3d_t> m_pTree;
     std::unordered_set<double> m_contourSet;
