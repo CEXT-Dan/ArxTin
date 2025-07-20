@@ -31,6 +31,15 @@ struct TinQueryInfo
     double slope = 0;
 };
 
+constexpr size_t triangleAtEdge(size_t e) noexcept
+{
+    if (e % 3 == 1)
+        return e - 1;
+    else if (e % 3 == 2)
+        return e - 2;
+    return e;
+}
+
 #ifdef ARXTINUI_MODULE
 #define DLLIMPEXP __declspec( dllexport )
 #else
@@ -52,6 +61,9 @@ struct TinQueryInfo
 // 
 #define DLLIMPEXP
 #endif
+
+constexpr std::size_t INVALID_INDEX = (std::numeric_limits<std::size_t>::max)();
+
 
 //-----------------------------------------------------------------------------
 class DLLIMPEXP CextDbTin : public AcDbEntity
@@ -161,11 +173,21 @@ public:
 
     TinQueryInfo      getInfoFromPoint(const AcGePoint3d& sourceWCS) const;
 
+    CeTriangles       findConnectingTriangles(const CeTriangle& tri);
+
+    AcGePoint3d       trianglecentroid(const CeTriangle& tri);
+
+    size_t            getTiangleIndex(const CeTriangle& tri) const; 
+
+
+
+
+
 
 public:
-    inline static CeTriangle invalidTiangle = CeTriangle{ std::wstring::npos, std::wstring::npos, std::wstring::npos };
+    inline static CeTriangle invalidTiangle = CeTriangle{ INVALID_INDEX, INVALID_INDEX, INVALID_INDEX };
 
-protected:
+public:
     //filed
     CePoints m_points;
     AcCmColor m_pointColor;
@@ -188,6 +210,7 @@ protected:
     CePolylines m_majorContours;
     CePolylines m_minorContours;
     CeTriangles m_triangles;
+    CeHalfedges m_halfedges;
     KdAcGePointAdapter m_adapter{ m_points };
     std::shared_ptr<kd_tree3d_t> m_pTree;
     std::unordered_set<double> m_contourSet;

@@ -47,7 +47,7 @@ public:
             if (id.objectClass()->isDerivedFrom(CextDbTin::desc()))
             {
                 AcDbObjectPointer<CextDbTin> tin(id);
-                if(tin.openStatus() != eOk)
+                if (tin.openStatus() != eOk)
                     continue;
 
                 AcString tstr;
@@ -207,17 +207,30 @@ public:
 
     static void CArxTinUIApp_tintest(void)
     {
-        bool isrunning = false;
-        if (!isrunning)
+        auto [psensel, id, _] = entsel();
+        if (psensel != Acad::PromptStatus::eNormal)
         {
-            curDoc()->inputPointManager()->addPointMonitor(&CArxTinInputPointMonitor::instance());
-            isrunning = true;
+            acutPrintf(_T("\nOOF"));
+            return;
         }
-        else
+        auto [psgetpoint, pnt] = getPoint();
+        if (psgetpoint != Acad::PromptStatus::eNormal)
         {
-            curDoc()->inputPointManager()->removePointMonitor(&CArxTinInputPointMonitor::instance());
-            isrunning = false;
+            acutPrintf(_T("\nOOF"));
+            return;
         }
+        AcDbObjectPointer<CextDbTin> tin(id);
+
+        auto tri = tin->getTrangleFromPoint(pnt);
+
+ 
+        auto vec = tin->findConnectingTriangles(tri);
+        for (int idx = 0; idx < vec.size(); idx++)
+        {
+            auto npnt = tin->trianglecentroid(vec[idx]);
+            acedGrDraw(asDblArray(pnt), asDblArray(npnt), 1, 0);
+        }
+
     }
 };
 

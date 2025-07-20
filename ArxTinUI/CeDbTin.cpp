@@ -641,7 +641,7 @@ void CextDbTin::computeTiangles()
     m_zmax = std::numeric_limits<int64_t>::min();
     getCoords(m_points, outCoords, m_zmin, m_zmax);
     delaunator::Delaunator d(outCoords);
-
+    m_halfedges = d.halfedges;
     for (size_t i = 0; i < d.triangles.size(); i += 3)
     {
         const auto a = d.triangles[i + 0];
@@ -862,7 +862,7 @@ static Acad::ErrorStatus computeTiangleNormal(const CeTriangle& tri, const CePoi
         AcGeVector3d AB = B - A;
         AcGeVector3d AC = C - A;
         normal = AB.crossProduct(AC);
-        normal.normalize();
+        // normal.normalize();
         return eOk;
     }
     return eInvalidInput;
@@ -885,6 +885,59 @@ TinQueryInfo CextDbTin::getInfoFromPoint(const AcGePoint3d& sourceWCS) const
     info.slope = computeSlopeFromNormal(normal);
     getElevationFromPoint(tri, sourceWCS, info.elev);
     return info;
+}
+
+
+CeTriangles CextDbTin::findConnectingTriangles(const CeTriangle& tri)
+{
+    CeTriangles tris;
+    if (tri == invalidTiangle)
+        return tris;
+
+    // Find the triangle index
+    size_t triIdx = getTiangleIndex(tri);
+    if (triIdx == INVALID_INDEX)
+        return tris;
+
+    // Each triangle has 3 edges, each edge may have a halfedge pointing to an adjacent triangle
+    // Delaunator stores triangles as consecutive triples: [a, b, c], so triIdx * 3 is the start
+    for (int i = 0; i < 3; ++i)
+    {
+        size_t edgeIdx = triIdx * 3 + i;
+        int halfedge = m_halfedges[edgeIdx];
+        if (halfedge != -1)
+        {
+            // The halfedge index points to the opposite edge in the adjacent triangle
+            // Find the triangle index of the adjacent triangle
+            size_t adjTriIdx = halfedge / 3;
+            if (adjTriIdx < m_triangles.size())
+            {
+                tris.push_back(m_triangles[adjTriIdx]);
+            }
+        }
+    }
+    return tris;
+}
+
+AcGePoint3d CextDbTin::trianglecentroid(const CeTriangle& tri)
+{
+    if (invalidTiangle == tri)
+        return AcGePoint3d{};
+    const AcGePoint3d& a = m_points[tri[0]];
+    const AcGePoint3d& b = m_points[tri[1]];
+    const AcGePoint3d& c = m_points[tri[2]];
+    const auto CX = (a.x + b.x + c.x) / 3;
+    const auto CY = (a.y + b.y + c.y) / 3;
+    const auto CZ = (a.z + b.z + c.z) / 3;
+    return AcGePoint3d{ CX, CY, CZ };
+}
+
+size_t CextDbTin::getTiangleIndex(const CeTriangle& tri) const
+{
+    auto iter = std::find(m_triangles.begin(), m_triangles.end(), tri);
+    if (iter != m_triangles.end())
+        return std::distance(m_triangles.begin(), iter);
+    return INVALID_INDEX;
 }
 
 AcCmTransparency CextDbTin::pointTransparency() const
@@ -931,100 +984,8 @@ void CextDbTin::setMajorTransparency(const AcCmTransparency& val)
     m_majorTransparency = val;
 }
 
-
-// Calculates the steepest path from a given point on the TIN surface.
-// Returns a vector of AcGePoint3d representing the path, starting at source.
-// The path follows the triangle mesh, moving in the direction of steepest descent until a local minimum or edge is reached.
 std::vector<AcGePoint3d> CextDbTin::calculateSteepestPath(const AcGePoint3d& source) const
 {
     std::vector<AcGePoint3d> path;
-    path.push_back(source);
-
-    // Find starting triangle
-    CeTriangle tri = getTrangleFromPoint(source);
-    if (tri == invalidTiangle)
-        return path;
-
-    AcGePoint3d current = source;
-    while (true)
-    {
-        // Get triangle vertices
-        const AcGePoint3d& t1 = m_points[tri[0]];
-        const AcGePoint3d& t2 = m_points[tri[1]];
-        const AcGePoint3d& t3 = m_points[tri[2]];
-
-        // Compute triangle normal
-        AcGeVector3d normal;
-        if (computeTiangleNormal(tri, m_points, normal) != eOk)
-            break;
-
-        // Steepest descent direction is the projection of gravity (-Z) onto the triangle plane
-        AcGeVector3d gravity(0, 0, -1);
-        AcGeVector3d descentDir = gravity - normal * gravity.dotProduct(normal);
-        if (descentDir.length() < 1e-8)
-            break;
-        descentDir.normalize();
-
-        // Find intersection of descent ray with triangle edges
-        double minT = std::numeric_limits<double>::max();
-        AcGePoint3d nextPoint = current;
-        bool found = false;
-        std::array<std::pair<AcGePoint3d, AcGePoint3d>, 3> edges = { 
-            { {t1, t2}, {t2, t3}, {t3, t1} }
-        };
-        for (const auto& edge : edges)
-        {
-            AcGeVector3d edgeVec = edge.second - edge.first;
-            AcGeVector3d p0 = edge.first - current;
-            AcGeVector3d p1 = edge.second - current;
-
-            // Parametric intersection: current + t * descentDir = edge.first + s * edgeVec
-            // Solve for t and s
-            AcGeVector3d dir = descentDir;
-            AcGeVector3d v = edgeVec;
-            AcGeVector3d w = edge.first - current;
-            double denom = dir.crossProduct(v).lengthSqrd();
-            if (denom < 1e-12)
-                continue;
-            double t = ((w).crossProduct(v)).dotProduct(normal) / denom;
-            double s = ((w).crossProduct(dir)).dotProduct(normal) / denom;
-            if (s >= 0.0 && s <= 1.0 && t > 1e-8 && t < minT)
-            {
-                minT = t;
-                nextPoint = current + descentDir * t;
-                found = true;
-            }
-        }
-        if (!found)
-            break;
-
-        // If nextPoint is below all triangle vertices, stop (local minimum)
-        if (nextPoint.z > t1.z && nextPoint.z > t2.z && nextPoint.z > t3.z)
-            break;
-
-        path.push_back(nextPoint);
-
-        // Find next triangle sharing the edge containing nextPoint
-        size_t nextTriIdx = std::wstring::npos;
-        for (size_t i = 0; i < m_triangles.size(); ++i)
-        {
-            const auto& candidate = m_triangles[i];
-            int shared = 0;
-            for (int j = 0; j < 3; ++j)
-            {
-                if (m_points[candidate[j]].isEqualTo(nextPoint))
-                    ++shared;
-            }
-            if (shared > 0)
-            {
-                nextTriIdx = i;
-                break;
-            }
-        }
-        if (nextTriIdx == std::wstring::npos)
-            break;
-        tri = m_triangles[nextTriIdx];
-        current = nextPoint;
-    }
     return path;
 }
