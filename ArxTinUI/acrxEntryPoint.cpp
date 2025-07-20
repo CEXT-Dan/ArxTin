@@ -34,7 +34,7 @@ class CArxTinInputPointMonitor : public AcEdInputPointMonitor
 public:
     virtual Acad::ErrorStatus monitorInputPoint(const AcEdInputPoint& input, AcEdInputPointMonitorResult& output) override
     {
-        
+
         AcDbDatabase* pDb = acdbCurDwg();
         AcDbBlockTableRecordPointer model(acdbSymUtil()->blockModelSpaceId(pDb));
         auto [es, iter] = makeBlockTableRecordIterator(*model);
@@ -47,15 +47,13 @@ public:
             if (id.objectClass()->isDerivedFrom(CextDbTin::desc()))
             {
                 AcDbObjectPointer<CextDbTin> tin(id);
-                double elev = 0;
-                if (tin->getElevationFromPoint(input.rawPoint(), elev) == eOk)
-                {
-                    AcString tstr;
-                    double slope = 0;
-                    tin->getSlopeFromPoint(input.rawPoint(), slope);
-                    tstr.format(_T("Elevation = %lf\nSlope = %lf\u00B0"), elev, slope);
-                    output.setAdditionalTooltipString(tstr);
-                }
+                if(tin.openStatus() != eOk)
+                    continue;
+
+                AcString tstr;
+                TinQueryInfo info = tin->getInfoFromPoint(input.rawPoint());
+                tstr.format(_T("Elevation = %lf\nSlope = %lf\u00B0"), info.elev, info.slope);
+                output.setAdditionalTooltipString(tstr);
             }
         }
         return Acad::eOk;

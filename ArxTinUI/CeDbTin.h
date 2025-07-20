@@ -24,6 +24,13 @@
 //-----------------------------------------------------------------------------
 #pragma once
 
+
+struct TinQueryInfo
+{
+    double elev = std::numeric_limits<int64_t>::min();
+    double slope = 0;
+};
+
 #ifdef ARXTINUI_MODULE
 #define DLLIMPEXP __declspec( dllexport )
 #else
@@ -145,12 +152,14 @@ public:
     AcCmTransparency majorTransparency() const;
     void             setMajorTransparency(const AcCmTransparency& val);
 
+    std::vector<AcGePoint3d> calculateSteepestPath(const AcGePoint3d& source) const;
     CextDbTin::DrawFlags drawFlags() const;
     void                 setDrawFlags(CextDbTin::DrawFlags val);
 
     CeTriangle        getTrangleFromPoint(const AcGePoint3d& sourceWCS) const;
-    Acad::ErrorStatus getElevationFromPoint(const AcGePoint3d& sourceWCS, double& elev) const;
-    Acad::ErrorStatus getSlopeFromPoint(const AcGePoint3d& sourceWCS, double& slope) const;
+    Acad::ErrorStatus getElevationFromPoint(const CeTriangle& tri, const AcGePoint3d& sourceWCS, double& elev) const;
+
+    TinQueryInfo      getInfoFromPoint(const AcGePoint3d& sourceWCS) const;
 
 
 public:
