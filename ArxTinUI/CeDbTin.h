@@ -119,58 +119,57 @@ public:
 
 
 public:
-    Adesk::Boolean drawPoints(AcGiSubEntityTraits& traits, AcGiWorldGeometry& geo) const;
-    Adesk::Boolean drawTriangles(AcGiSubEntityTraits& traits, AcGiWorldGeometry& geo) const;
-    Adesk::Boolean drawContours(AcGiSubEntityTraits& traits, AcGiWorldGeometry& geo) const;
+    Adesk::Boolean      drawPoints(AcGiSubEntityTraits& traits, AcGiWorldGeometry& geo) const;
+    Adesk::Boolean      drawTriangles(AcGiSubEntityTraits& traits, AcGiWorldGeometry& geo) const;
+    Adesk::Boolean      drawContours(AcGiSubEntityTraits& traits, AcGiWorldGeometry& geo) const;
 
-    void        setPoints(const CePoints& points);
-    void        recompute(bool force = false);
-    void        createTree();
-    void        computeTiangles();
-    void        computeSlopeColors(const CeTriangle& tri);
-    void        genMajorContours();
-    void        genMinorContours();
+    void                setPoints(const CePoints& points);
+    void                recompute(bool force = false);
+    void                createTree();
+    void                computeTiangles();
+    void                computeSlopeColors(const CeTriangle& tri);
+    void                genMajorContours();
+    void                genMinorContours();
 
-    AcCmColor   pointColor() const;
-    void        setpointColor(const AcCmColor& val);
-    AcCmColor   tinColor() const;
-    void        setTinColor(const AcCmColor& val);
-    AcCmColor   majorContourColor() const;
-    void        setMajorContourColor(const AcCmColor& val);
-    AcCmColor   getMinorContourColor() const;
-    void        setMinorContourColor(const AcCmColor& val);
-    AcGePoint3d getClosestPointTo(const AcGePoint3d& point);
+    AcCmColor           pointColor() const;
+    void                setpointColor(const AcCmColor& val);
+    AcCmColor           tinColor() const;
+    void                setTinColor(const AcCmColor& val);
+    AcCmColor           majorContourColor() const;
+    void                setMajorContourColor(const AcCmColor& val);
+    AcCmColor           getMinorContourColor() const;
+    void                setMinorContourColor(const AcCmColor& val);
 
-    void        addPoint(const AcGePoint3d& point);
+    Acad::ErrorStatus   getClosestPointTo(const AcGePoint3d& point, AcGePoint3d& result);
 
-    double      majorZ() const;
-    void        setMajorZ(double val);
-    double      minorZ() const;
-    void        setMinorZ(double val);
-    double      area2d() const;
-    double      area3d() const;
+    void                addPoint(const AcGePoint3d& point);
 
-    AcCmTransparency pointTransparency() const;
-    void             setPointTransparency(const AcCmTransparency& val);
-    AcCmTransparency tinTransparency() const;
-    void             setTinTransparency(const AcCmTransparency& val);
-    AcCmTransparency minorTransparency() const;
-    void             setMinorTransparency(const AcCmTransparency& val);
-    AcCmTransparency majorTransparency() const;
-    void             setMajorTransparency(const AcCmTransparency& val);
+    double              majorZ() const;
+    void                setMajorZ(double val);
+    double              minorZ() const;
+    void                setMinorZ(double val);
+    double              area2d() const;
+    double              area3d() const;
+
+    AcCmTransparency    pointTransparency() const;
+    void                setPointTransparency(const AcCmTransparency& val);
+    AcCmTransparency    tinTransparency() const;
+    void                setTinTransparency(const AcCmTransparency& val);
+    AcCmTransparency    minorTransparency() const;
+    void                setMinorTransparency(const AcCmTransparency& val);
+    AcCmTransparency    majorTransparency() const;
+    void                setMajorTransparency(const AcCmTransparency& val);
 
     CextDbTin::DrawFlags drawFlags() const;
     void                 setDrawFlags(CextDbTin::DrawFlags val);
 
-    CeTriangle        getTriangleFromPoint(const AcGePoint3d& sourceWCS) const;
-    size_t            getTriangleIndex(const CeTriangle& tri) const;
-    CeTriangle        getTriangleAt(size_t index) const;
-    CeTriangleIndexs  getAdjacentTrianglesIndexs(const CeTriangle& tri) const;
-    Acad::ErrorStatus getElevationFromPoint(const CeTriangle& tri, const AcGePoint3d& sourceWCS, double& elev) const;
-    TinQueryInfo      getInfoFromPoint(const AcGePoint3d& sourceWCS) const;
-    AcGePoint3d       trianglecentroid(const CeTriangle& tri) const;
-
-
+    CeTriangle          getTriangleFromPoint(const AcGePoint3d& sourceWCS) const;
+    size_t              getTriangleIndex(const CeTriangle& tri) const;
+    CeTriangle          getTriangleAt(size_t index) const;
+    CeTriangleIndexs    getAdjacentTrianglesIndexs(const CeTriangle& tri) const;
+    Acad::ErrorStatus   getElevationFromPoint(const CeTriangle& tri, const AcGePoint3d& sourceWCS, double& elev) const;
+    TinQueryInfo        getInfoFromPoint(const AcGePoint3d& sourceWCS) const;
+    AcGePoint3d         trianglecentroid(const CeTriangle& tri) const;
 
 public:
     inline static CeTriangle invalidTiangle = CeTriangle{ INVALID_INDEX, INVALID_INDEX, INVALID_INDEX };

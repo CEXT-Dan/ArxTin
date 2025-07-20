@@ -65,11 +65,13 @@ ACRX_DXF_DEFINE_MEMBERS(
 //-----------------------------------------------------------------------------
 CextDbTin::CextDbTin() : AcDbEntity()
 {
+    m_dirty = true;
 }
 
 CextDbTin::CextDbTin(const CePoints& points)
     : AcDbEntity(), m_points(points)
 {
+    m_dirty = true;
 }
 
 Acad::ErrorStatus CextDbTin::dwgOutFields(AcDbDwgFiler* pFiler) const
@@ -843,7 +845,7 @@ void CextDbTin::setMinorContourColor(const AcCmColor& val)
     m_minorContourColor = val;
 }
 
-AcGePoint3d CextDbTin::getClosestPointTo(const AcGePoint3d& point)
+Acad::ErrorStatus CextDbTin::getClosestPointTo(const AcGePoint3d& point, AcGePoint3d& result)
 {
     const auto& tri = getTriangleFromPoint(point);
     if (tri != invalidTiangle)
@@ -852,15 +854,18 @@ AcGePoint3d CextDbTin::getClosestPointTo(const AcGePoint3d& point)
         const AcGePoint3d& t2 = m_points[tri[1]];
         const AcGePoint3d& t3 = m_points[tri[2]];
         AcGePlane plane(t1, t2 - t1, t3 - t1);
-        return point.project(plane, AcGeVector3d::kZAxis);
+        result = point.project(plane, AcGeVector3d::kZAxis);
+        return eOk;
     }
-    return AcGePoint3d{};
+    return Acad::eNotApplicable;
 }
 
 void CextDbTin::addPoint(const AcGePoint3d& point)
 {
     assertWriteEnabled();
     m_points.push_back(point);
+    recordGraphicsModified();
+    m_dirty = true;
 }
 
 double CextDbTin::majorZ() const

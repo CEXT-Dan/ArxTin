@@ -220,8 +220,11 @@ public:
             return;
         }
         AcDbObjectPointer<CextDbTin> tin(id, AcDb::OpenMode::kForWrite);
-        auto clpoint = tin->getClosestPointTo(pnt);
-        tin->addPoint(clpoint);
+        AcGePoint3d clpoint;
+        if(auto es = tin->getClosestPointTo(pnt,clpoint); es != eOk)
+            tin->addPoint(pnt);
+        else
+            tin->addPoint(clpoint);
     }
 };
 
