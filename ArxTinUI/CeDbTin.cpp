@@ -286,9 +286,7 @@ Adesk::Boolean CextDbTin::subWorldDraw(AcGiWorldDraw* mode)
     auto& rTraits = mode->subEntityTraits();
     auto& rGeo = mode->geometry();
 
-    computeTiangles();
-    genMajorContours();
-    genMinorContours();
+    recompute();
 
     drawPoints(rTraits, rGeo);
     drawTriangles(rTraits, rGeo);
@@ -324,7 +322,20 @@ Acad::ErrorStatus CextDbTin::subGetOsnapPoints(
 Acad::ErrorStatus CextDbTin::subTransformBy(const AcGeMatrix3d& xform)
 {
     assertWriteEnabled();
-    std::for_each(std::execution::par_unseq, m_points.begin(), m_points.end(), [&](AcGePoint3d& p) { p.transformBy(xform); });
+    std::for_each(std::execution::par, m_points.begin(), m_points.end(), [&](AcGePoint3d& p) 
+        { 
+            p.transformBy(xform); 
+        });
+    std::for_each(std::execution::par, m_majorContours.begin(), m_majorContours.end(), [&](CePolyline& p) 
+        { 
+            for (auto& pnt : p)
+                pnt.transformBy(xform);
+        });
+    std::for_each(std::execution::par, m_minorContours.begin(), m_minorContours.end(), [&](CePolyline& p)
+        {
+            for (auto& pnt : p)
+                pnt.transformBy(xform);
+        });
     return xDataTransformBy(xform);
 }
 
