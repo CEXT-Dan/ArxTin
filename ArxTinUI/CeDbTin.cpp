@@ -887,33 +887,23 @@ TinQueryInfo CextDbTin::getInfoFromPoint(const AcGePoint3d& sourceWCS) const
     return info;
 }
 
-
-CeTriangles CextDbTin::findConnectingTriangles(const CeTriangle& tri)
+CeTriangleIndexs CextDbTin::getAdjacentTriangles(const CeTriangle& tri)
 {
-    CeTriangles tris;
+    CeTriangleIndexs tris;
     if (tri == invalidTiangle)
         return tris;
-
-    // Find the triangle index
     size_t triIdx = getTiangleIndex(tri);
     if (triIdx == INVALID_INDEX)
         return tris;
-
-    // Each triangle has 3 edges, each edge may have a halfedge pointing to an adjacent triangle
-    // Delaunator stores triangles as consecutive triples: [a, b, c], so triIdx * 3 is the start
     for (int i = 0; i < 3; ++i)
     {
         size_t edgeIdx = triIdx * 3 + i;
         int halfedge = m_halfedges[edgeIdx];
         if (halfedge != -1)
         {
-            // The halfedge index points to the opposite edge in the adjacent triangle
-            // Find the triangle index of the adjacent triangle
             size_t adjTriIdx = halfedge / 3;
             if (adjTriIdx < m_triangles.size())
-            {
-                tris.push_back(m_triangles[adjTriIdx]);
-            }
+                tris.push_back(adjTriIdx);
         }
     }
     return tris;
@@ -938,6 +928,13 @@ size_t CextDbTin::getTiangleIndex(const CeTriangle& tri) const
     if (iter != m_triangles.end())
         return std::distance(m_triangles.begin(), iter);
     return INVALID_INDEX;
+}
+
+CeTriangle CextDbTin::getTriangleAt(size_t index) const
+{
+    if (index < m_triangles.size())
+        return m_triangles[index];
+    return invalidTiangle;
 }
 
 AcCmTransparency CextDbTin::pointTransparency() const

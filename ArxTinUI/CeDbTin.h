@@ -169,18 +169,12 @@ public:
     void                 setDrawFlags(CextDbTin::DrawFlags val);
 
     CeTriangle        getTrangleFromPoint(const AcGePoint3d& sourceWCS) const;
+    size_t            getTiangleIndex(const CeTriangle& tri) const;
+    CeTriangle        getTriangleAt(size_t index) const;
     Acad::ErrorStatus getElevationFromPoint(const CeTriangle& tri, const AcGePoint3d& sourceWCS, double& elev) const;
-
     TinQueryInfo      getInfoFromPoint(const AcGePoint3d& sourceWCS) const;
-
-    CeTriangles       findConnectingTriangles(const CeTriangle& tri);
-
+    CeTriangleIndexs  getAdjacentTriangles(const CeTriangle& tri);
     AcGePoint3d       trianglecentroid(const CeTriangle& tri);
-
-    size_t            getTiangleIndex(const CeTriangle& tri) const; 
-
-
-
 
 
 

@@ -178,6 +178,7 @@ inline AcDbObjectUPtr<T> openObjectId(const AcDbObjectId& id, AcDb::OpenMode mod
     return AcDbObjectUPtr<T>(pobj);
 }
 
+using CeTriangleIndexs = std::vector<std::size_t>;
 using CeHalfedges = std::vector<std::size_t>;
 using CeTriangle = std::array<size_t, 3>;
 using CeTriangles = std::vector<CeTriangle>;
