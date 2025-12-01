@@ -11,6 +11,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ArxTinUI_25", "ArxTinUI\Arx
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ArxTinUI_G26", "ArxTinUI\ArxTinUI_G26.vcxproj", "{08A72DAD-A84A-4377-9DC6-E2767C5E0734}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ArxTinUI_IRX14", "ArxTinUI\ArxTinUI_IRX14.vcxproj", "{2CEA5FD6-6083-4136-A248-741649E47035}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -33,6 +35,10 @@ Global
 		{08A72DAD-A84A-4377-9DC6-E2767C5E0734}.Debug|x64.Build.0 = Debug|x64
 		{08A72DAD-A84A-4377-9DC6-E2767C5E0734}.Release|x64.ActiveCfg = Release|x64
 		{08A72DAD-A84A-4377-9DC6-E2767C5E0734}.Release|x64.Build.0 = Release|x64
+		{2CEA5FD6-6083-4136-A248-741649E47035}.Debug|x64.ActiveCfg = Debug|x64
+		{2CEA5FD6-6083-4136-A248-741649E47035}.Debug|x64.Build.0 = Debug|x64
+		{2CEA5FD6-6083-4136-A248-741649E47035}.Release|x64.ActiveCfg = Release|x64
+		{2CEA5FD6-6083-4136-A248-741649E47035}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

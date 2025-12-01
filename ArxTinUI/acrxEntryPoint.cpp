@@ -101,13 +101,30 @@ public:
         return std::make_tuple(Acad::PromptStatus(res), id, pnt);
     }
 
+    static Acad::ErrorStatus acedGetCurrentSelectionSet(ads_name ssname, AcDbObjectIdArray& ids)
+    {
+        AcDbObjectId id;
+        Adesk::Int32 nsize = 0;
+        acedSSLength(ssname, &nsize);
+        for (size_t i = 0; i < nsize; i++)
+        {
+            ads_name ename = { 0 };
+            if (acedSSName(ssname, i, ename) == RTNORM) [[likely]]
+            {
+                if (acdbGetObjectId(id, ename) == eOk) [[likely]]
+                    ids.append(id);
+            }
+        }
+        return eOk;
+    }
+
     static auto ssget() -> std::tuple<Acad::PromptStatus, AcDbObjectIdArray>
     {
         AcDbObjectIdArray ids;
         ads_name ssname = { 0L };
         AcResBufPtr filter{ acutBuildList(RTDXF0, ACRX_T("POINT"), RTNONE) };
         int res = acedSSGet(NULL, NULL, NULL, filter.get(), ssname);
-        if (res != RTNORM || acedGetCurrentSelectionSet(ids) != eOk)
+        if (res != RTNORM || acedGetCurrentSelectionSet(ssname, ids) != eOk)
             return std::make_tuple(Acad::PromptStatus::eError, ids);
         acedSSFree(ssname);
         return std::make_tuple(Acad::PromptStatus(res), std::move(ids));
@@ -158,7 +175,7 @@ public:
 
         auto points = getGePoints(ids);
         AcDbDatabase* pDb = acdbCurDwg();
-        AcDbBlockTableRecordPointer model(acdbSymUtil()->blockModelSpaceId(pDb), AcDb::OpenMode::kForWrite);
+        AcDbBlockTableRecordPointer model(pDb->currentSpaceId(), AcDb::OpenMode::kForWrite);
 
         PerfTimer timer(__FUNCTIONW__);
         CextDbTinUPtr ptin(new CextDbTin(points));
