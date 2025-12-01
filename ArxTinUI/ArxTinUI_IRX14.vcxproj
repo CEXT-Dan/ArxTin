@@ -123,6 +123,7 @@
     <ClCompile Include="ArxTinUI.cpp" />
     <ClCompile Include="CeDbTin.cpp" />
     <ClCompile Include="DocData.cpp" />
+    <ClCompile Include="PointFileReader.cpp" />
     <ClCompile Include="StdAfx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
@@ -133,6 +134,7 @@
     <ClInclude Include="delaunator-header-only.hpp" />
     <ClInclude Include="DocData.h" />
     <ClInclude Include="nanoflann.hpp" />
+    <ClInclude Include="PointFileReader.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="StdAfx.h" />
   </ItemGroup>

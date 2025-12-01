@@ -25,6 +25,8 @@
 #include "StdAfx.h"
 #include "resource.h"
 #include "CeDbTin.h"
+#include "PointFileReader.h"
+
 
 //-----------------------------------------------------------------------------
 #define szRDS _RXST("")
@@ -238,10 +240,72 @@ public:
         }
         AcDbObjectPointer<CextDbTin> tin(id, AcDb::OpenMode::kForWrite);
         AcGePoint3d clpoint;
-        if(auto es = tin->getClosestPointTo(pnt,clpoint); es != eOk)
+        if (auto es = tin->getClosestPointTo(pnt, clpoint); es != eOk)
             tin->addPoint(pnt);
         else
             tin->addPoint(clpoint);
+    }
+
+    static void CArxTinUIApp_tinner2(void)
+    {
+        using CextDbTinUPtr = AcDbObjectUPtr<CextDbTin>;
+
+        AcString acpath;
+        if(RTNORM != acedGetString(0, _T("Enter path: "), acpath))
+        {
+            acutPrintf(_T("\nOOF in acedGetString"));
+            return;
+        }
+        const std::filesystem::path inpath = (const wchar_t*)acpath;
+        const char dlm = ',';
+
+        double maxz = 1;
+        double minz = 1;
+        int32_t drawFlags = int32_t(CextDbTin::DrawFlags::kDrawTin);
+
+        PerfTimer timer(__FUNCTIONW__);
+
+        CePoints points;
+        PNEZDArray penzdList;
+
+        if (parse_pnezd(inpath, dlm, penzdList))
+        {
+            points.reserve(penzdList.size());
+            for (const auto& item : penzdList)
+            {
+                points.push_back(item.point);
+            }
+        }
+
+        AcDbDatabase* pDb = acdbCurDwg();
+        AcDbBlockTableRecordPointer model(pDb->currentSpaceId(), AcDb::OpenMode::kForWrite);
+        CextDbTinUPtr ptin(new CextDbTin(points));
+
+        //what to draw
+        ptin->setDrawFlags(static_cast<CextDbTin::DrawFlags>(drawFlags));
+
+        AcCmColor tincolor;
+        tincolor.setColorIndex(139);
+        ptin->setTinColor(tincolor);
+        AcCmTransparency tinTr{ 1.0 - (50 * 0.01) };
+        ptin->setTinTransparency(tinTr);
+
+        //contours
+        ptin->setMinorZ(minz);
+        ptin->setMajorZ(maxz);
+
+        AcCmColor mincolor;
+        mincolor.setColorIndex(3);
+        ptin->setMinorContourColor(mincolor);
+        AcCmTransparency minorTr{ 1.0 - (50 * 0.01) };
+        ptin->setMinorTransparency(minorTr);
+
+        AcCmColor majcolor;
+        majcolor.setColorIndex(1);
+        ptin->setMajorContourColor(majcolor);
+
+        model->appendAcDbEntity(ptin.get());
+        timer.end(_T("Done "));
     }
 };
 
@@ -250,5 +314,6 @@ public:
 ACED_ARXCOMMAND_ENTRY_AUTO(CArxTinUIApp, CArxTinUIApp, _tinner, tinner, ACRX_CMD_TRANSPARENT, NULL)
 ACED_ARXCOMMAND_ENTRY_AUTO(CArxTinUIApp, CArxTinUIApp, _tininspect, tininspect, ACRX_CMD_TRANSPARENT, NULL)
 ACED_ARXCOMMAND_ENTRY_AUTO(CArxTinUIApp, CArxTinUIApp, _tintest, tintest, ACRX_CMD_TRANSPARENT, NULL)
+ACED_ARXCOMMAND_ENTRY_AUTO(CArxTinUIApp, CArxTinUIApp, _tinner2, tinner2, ACRX_CMD_TRANSPARENT, NULL)
 IMPLEMENT_ARX_ENTRYPOINT(CArxTinUIApp)
 #pragma warning( pop )

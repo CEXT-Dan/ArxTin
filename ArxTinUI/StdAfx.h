@@ -69,6 +69,9 @@
 #include <string>
 #include <array>
 #include <numbers>
+#include <variant>
+#include <filesystem>
+
 
 #include "TCHAR.h"
 

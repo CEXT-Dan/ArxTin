@@ -30,6 +30,9 @@
     <ClCompile Include="CeDbTin.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="PointFileReader.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="DocData.h">
@@ -48,6 +51,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="nanoflann.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="PointFileReader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
