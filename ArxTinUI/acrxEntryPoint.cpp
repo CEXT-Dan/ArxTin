@@ -27,7 +27,6 @@
 #include "CeDbTin.h"
 #include "PointFileReader.h"
 
-
 //-----------------------------------------------------------------------------
 #define szRDS _RXST("")
 
@@ -66,7 +65,6 @@ public:
         return mthis;
     }
 };
-
 
 //-----------------------------------------------------------------------------
 //----- ObjectARX EntryPoint
@@ -251,7 +249,7 @@ public:
         using CextDbTinUPtr = AcDbObjectUPtr<CextDbTin>;
 
         AcString acpath;
-        if(RTNORM != acedGetString(0, _T("Enter path: "), acpath))
+        if (RTNORM != acedGetString(0, _T("Enter path: "), acpath))
         {
             acutPrintf(_T("\nOOF in acedGetString"));
             return;
@@ -307,6 +305,14 @@ public:
         model->appendAcDbEntity(ptin.get());
         timer.end(_T("Done "));
     }
+
+//#define TINDEBUG
+#ifdef TINDEBUG
+    static void CArxTinUIApp_doit(void)
+    {
+        acutPrintf(L"\nHI");
+    }
+#endif
 };
 
 //-----------------------------------------------------------------------------
@@ -315,5 +321,8 @@ ACED_ARXCOMMAND_ENTRY_AUTO(CArxTinUIApp, CArxTinUIApp, _tinner, tinner, ACRX_CMD
 ACED_ARXCOMMAND_ENTRY_AUTO(CArxTinUIApp, CArxTinUIApp, _tininspect, tininspect, ACRX_CMD_TRANSPARENT, NULL)
 ACED_ARXCOMMAND_ENTRY_AUTO(CArxTinUIApp, CArxTinUIApp, _tintest, tintest, ACRX_CMD_TRANSPARENT, NULL)
 ACED_ARXCOMMAND_ENTRY_AUTO(CArxTinUIApp, CArxTinUIApp, _tinner2, tinner2, ACRX_CMD_TRANSPARENT, NULL)
+#ifdef TINDEBUG
+ACED_ARXCOMMAND_ENTRY_AUTO(CArxTinUIApp, CArxTinUIApp, _doit, doit, ACRX_CMD_TRANSPARENT, NULL)
+#endif
 IMPLEMENT_ARX_ENTRYPOINT(CArxTinUIApp)
 #pragma warning( pop )
